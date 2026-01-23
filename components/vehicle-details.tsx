@@ -10,6 +10,7 @@ import {
   CheckCircle2, AlertTriangle, Bell, Truck
 } from 'lucide-react'
 import { useVehicleActions } from '@/hooks/use-store'
+import { useTranslations } from '@/lib/i18n/context'
 import type { Vehicle, VehicleStatus } from '@/lib/types'
 
 interface VehicleDetailsProps {
@@ -18,29 +19,19 @@ interface VehicleDetailsProps {
   compact?: boolean
 }
 
-const statusConfig: Record<VehicleStatus, { label: string; color: string; icon: typeof Car }> = {
-  parked: { label: 'Estacionado', color: 'bg-muted text-muted-foreground', icon: Car },
-  requested: { label: 'Solicitado', color: 'bg-warning text-warning-foreground', icon: Bell },
-  ready: { label: 'Listo', color: 'bg-accent text-accent-foreground', icon: CheckCircle2 },
-  delivered: { label: 'Entregado', color: 'bg-primary text-primary-foreground', icon: Truck },
-}
-
-const getElapsedTimeBetween = (startDate: Date, endDate: Date) => {
-  const diff = new Date(endDate).getTime() - new Date(startDate).getTime()
-  const minutes = Math.floor(diff / 60000)
-  const hours = Math.floor(minutes / 60)
-  
-  if (hours > 0) {
-    return `${hours}h ${minutes % 60}m`
-  }
-  return `${minutes}m`
-}
-
 export function VehicleDetails({ vehicle, onStatusChange, compact = false }: VehicleDetailsProps) {
   const [attendantName, setAttendantName] = useState('')
   const [showMedia, setShowMedia] = useState(false)
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null)
   const { updateStatus } = useVehicleActions()
+  const t = useTranslations()
+
+  const statusConfig: Record<VehicleStatus, { label: string; color: string; icon: typeof Car }> = {
+    parked: { label: t.status.parked, color: 'bg-muted text-muted-foreground', icon: Car },
+    requested: { label: t.status.requested, color: 'bg-warning text-warning-foreground', icon: Bell },
+    ready: { label: t.status.ready, color: 'bg-accent text-accent-foreground', icon: CheckCircle2 },
+    delivered: { label: t.status.delivered, color: 'bg-primary text-primary-foreground', icon: Truck },
+  }
 
   const photoCount = vehicle.media?.filter(m => m.type === 'photo').length || vehicle.photos?.length || 0
   const videoCount = vehicle.media?.filter(m => m.type === 'video').length || vehicle.videos?.length || 0
@@ -50,14 +41,14 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
   const StatusIcon = status.icon
 
   const formatTime = (date: Date) => {
-    return new Date(date).toLocaleTimeString('es-AR', { 
+    return new Date(date).toLocaleTimeString('es-ES', { 
       hour: '2-digit', 
       minute: '2-digit' 
     })
   }
 
   const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('es-AR', { 
+    return new Date(date).toLocaleDateString('es-ES', { 
       day: '2-digit',
       month: '2-digit',
       hour: '2-digit', 
@@ -77,6 +68,17 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
     return `${minutes}m`
   }
 
+  const getElapsedTimeBetween = (startDate: Date, endDate: Date) => {
+    const diff = new Date(endDate).getTime() - new Date(startDate).getTime()
+    const minutes = Math.floor(diff / 60000)
+    const hours = Math.floor(minutes / 60)
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes % 60}m`
+    }
+    return `${minutes}m`
+  }
+
   const handleMarkReady = () => {
     const updated = updateStatus(vehicle.id, 'ready', attendantName || undefined)
     if (updated) onStatusChange?.(updated)
@@ -87,12 +89,10 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
     if (updated) onStatusChange?.(updated)
   }
 
-  // Get all media items (photos and videos)
   const getAllMedia = () => {
     if (vehicle.media && vehicle.media.length > 0) {
       return vehicle.media
     }
-    // Fallback to legacy photos/videos arrays
     const items: { id: string; type: 'photo' | 'video'; url: string }[] = []
     vehicle.photos?.forEach((url, i) => items.push({ id: `photo-${i}`, type: 'photo', url }))
     vehicle.videos?.forEach((url, i) => items.push({ id: `video-${i}`, type: 'video', url }))
@@ -116,11 +116,10 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
               </div>
               <p className="text-lg font-semibold text-foreground">{vehicle.licensePlate}</p>
               
-              {/* Fecha y hora de entrada */}
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
-                  Entrada: {formatDate(vehicle.checkinTime)}
+                  {t.vehicles.entry}: {formatDate(vehicle.checkinTime)}
                 </span>
                 {vehicle.parkingSpot && (
                   <span className="flex items-center gap-1">
@@ -130,27 +129,24 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
                 )}
               </div>
 
-              {/* Fecha y hora de salida (solo si fue entregado) */}
               {isDelivered && vehicle.deliveredTime && (
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
                   <span className="flex items-center gap-1 text-primary">
                     <Truck className="h-3 w-3" />
-                    Salida: {formatDate(vehicle.deliveredTime)}
+                    {t.vehicles.exit}: {formatDate(vehicle.deliveredTime)}
                   </span>
                   <span className="text-muted-foreground">
-                    (Duración: {getElapsedTimeBetween(vehicle.checkinTime, vehicle.deliveredTime)})
+                    ({t.vehicles.duration}: {getElapsedTimeBetween(vehicle.checkinTime, vehicle.deliveredTime)})
                   </span>
                 </div>
               )}
 
-              {/* Tiempo transcurrido (si no fue entregado) */}
               {!isDelivered && (
                 <div className="text-sm text-muted-foreground">
-                  Hace {getElapsedTime(vehicle.checkinTime)}
+                  {getElapsedTime(vehicle.checkinTime)}
                 </div>
               )}
 
-              {/* Notas si existen */}
               {vehicle.notes && (
                 <div className="flex items-start gap-1 text-sm text-warning">
                   <AlertTriangle className="h-3 w-3 mt-0.5 flex-shrink-0" />
@@ -187,7 +183,6 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
 
   return (
     <>
-      {/* Video Modal */}
       {selectedVideo && (
         <div className="fixed inset-0 z-50 bg-background/95 flex items-center justify-center p-4">
           <div className="relative w-full max-w-2xl">
@@ -223,15 +218,14 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Main Info */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">Patente</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">{t.vehicle.licensePlate}</p>
               <p className="text-2xl font-bold text-foreground">{vehicle.licensePlate}</p>
             </div>
             {vehicle.parkingSpot && (
               <div className="space-y-1">
-                <p className="text-xs text-muted-foreground uppercase tracking-wide">Ubicación</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">{t.vehicle.location}</p>
                 <p className="text-2xl font-bold text-foreground flex items-center gap-2">
                   <MapPin className="h-5 w-5" />
                   {vehicle.parkingSpot}
@@ -240,12 +234,11 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
             )}
           </div>
 
-          {/* Time Info */}
           <div className="bg-muted/50 rounded-lg p-3 space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground flex items-center gap-2">
                 <Clock className="h-4 w-4" />
-                Entrada
+                {t.vehicles.entry}
               </span>
               <span className="font-medium text-foreground">{formatTime(vehicle.checkinTime)}</span>
             </div>
@@ -253,7 +246,7 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground flex items-center gap-2">
                   <Bell className="h-4 w-4" />
-                  Solicitado
+                  {t.status.requested}
                 </span>
                 <span className="font-medium text-foreground">{formatTime(vehicle.requestedTime)}</span>
               </div>
@@ -262,22 +255,21 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground flex items-center gap-2">
                   <Truck className="h-4 w-4" />
-                  Entregado
+                  {t.status.delivered}
                 </span>
                 <span className="font-medium text-foreground">{formatDate(vehicle.deliveredTime)}</span>
               </div>
             )}
             <div className="flex items-center justify-between text-sm pt-2 border-t border-border">
-              <span className="text-muted-foreground">Tiempo total</span>
+              <span className="text-muted-foreground">{t.vehicle.duration}</span>
               <span className="font-bold text-foreground">{getElapsedTime(vehicle.checkinTime)}</span>
             </div>
           </div>
 
-          {/* Attendant Info */}
           {vehicle.attendantName && (
             <div className="flex items-center gap-2 text-sm">
               <User className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">Recibido por:</span>
+              <span className="text-muted-foreground">{t.vehicle.attendant}:</span>
               <span className="font-medium text-foreground">{vehicle.attendantName}</span>
             </div>
           )}
@@ -285,19 +277,18 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
           {vehicle.deliveryAttendant && (
             <div className="flex items-center gap-2 text-sm">
               <Truck className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">Entregado por:</span>
+              <span className="text-muted-foreground">{t.vehicle.deliveryAttendant}:</span>
               <span className="font-medium text-foreground">{vehicle.deliveryAttendant}</span>
             </div>
           )}
 
-          {/* Notes */}
           {vehicle.notes && (
             <div className="bg-warning/10 border border-warning/30 rounded-lg p-3">
               <div className="flex items-start gap-2">
                 <AlertTriangle className="h-4 w-4 text-warning mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="text-xs font-medium text-warning uppercase tracking-wide mb-1">
-                    Observaciones
+                    {t.vehicle.notes}
                   </p>
                   <p className="text-sm text-foreground">{vehicle.notes}</p>
                 </div>
@@ -305,7 +296,6 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
             </div>
           )}
 
-          {/* Media (Photos & Videos) */}
           {totalMediaCount > 0 && (
             <div>
               <button
@@ -314,9 +304,7 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
                 className="flex items-center gap-2 text-sm text-primary hover:underline"
               >
                 <Camera className="h-4 w-4" />
-                Ver {photoCount > 0 && `${photoCount} foto${photoCount > 1 ? 's' : ''}`}
-                {photoCount > 0 && videoCount > 0 && ' y '}
-                {videoCount > 0 && `${videoCount} video${videoCount > 1 ? 's' : ''}`}
+                {t.vehicle.viewMedia} ({photoCount} {t.media.photos}, {videoCount} {t.media.videos})
               </button>
               
               {showMedia && (
@@ -326,7 +314,7 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
                       {item.type === 'photo' ? (
                         <img 
                           src={item.url || "/placeholder.svg"} 
-                          alt="Foto del vehículo" 
+                          alt="Photo" 
                           className="w-full h-full object-cover"
                         />
                       ) : (
@@ -355,18 +343,17 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
             </div>
           )}
 
-          {/* Actions */}
           {(vehicle.status === 'requested' || vehicle.status === 'ready') && (
             <div className="border-t border-border pt-4 space-y-3">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground flex items-center gap-2">
                   <User className="h-4 w-4" />
-                  Tu nombre (opcional)
+                  {t.alerts.yourName} ({t.common.optional})
                 </label>
                 <Input
                   value={attendantName}
                   onChange={(e) => setAttendantName(e.target.value)}
-                  placeholder="Ingresa tu nombre"
+                  placeholder={t.alerts.attendantPlaceholder}
                 />
               </div>
 
@@ -377,7 +364,7 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
                   size="lg"
                 >
                   <CheckCircle2 className="h-5 w-5 mr-2" />
-                  Marcar como Listo
+                  {t.alerts.markReady}
                 </Button>
               )}
 
@@ -388,7 +375,7 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
                   size="lg"
                 >
                   <Truck className="h-5 w-5 mr-2" />
-                  Confirmar Entrega
+                  {t.alerts.confirmDelivery}
                 </Button>
               )}
             </div>
@@ -397,7 +384,7 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
           {vehicle.status === 'delivered' && (
             <div className="bg-primary/10 rounded-lg p-4 text-center">
               <CheckCircle2 className="h-8 w-8 text-primary mx-auto mb-2" />
-              <p className="font-medium text-foreground">Vehículo Entregado</p>
+              <p className="font-medium text-foreground">{t.status.delivered}</p>
               <p className="text-sm text-muted-foreground">
                 {formatDate(vehicle.deliveredTime!)}
               </p>

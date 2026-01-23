@@ -11,6 +11,7 @@ import {
   Bell
 } from 'lucide-react'
 import { useActiveVehicles } from '@/hooks/use-store'
+import { useTranslations } from '@/lib/i18n/context'
 
 export type TabType = 'checkin' | 'checkout' | 'vehicles' | 'notifications' | 'history'
 
@@ -21,16 +22,16 @@ interface NavigationProps {
 
 export function Navigation({ activeTab, onTabChange }: NavigationProps) {
   const activeVehicles = useActiveVehicles()
+  const t = useTranslations()
   const parkedCount = activeVehicles.filter(v => v.status === 'parked').length
-  // Alertas = vehículos solicitados + listos (pendientes de entregar)
   const alertsCount = activeVehicles.filter(v => v.status === 'requested' || v.status === 'ready').length
 
   const tabs: { id: TabType; label: string; icon: typeof Car; badge?: number }[] = [
-    { id: 'checkin', label: 'Entrada', icon: LogIn },
-    { id: 'checkout', label: 'Salida', icon: LogOut },
-    { id: 'vehicles', label: 'Activos', icon: List, badge: parkedCount || undefined },
-    { id: 'notifications', label: 'Alertas', icon: Bell, badge: alertsCount || undefined },
-    { id: 'history', label: 'Historial', icon: Clock },
+    { id: 'checkin', label: t.nav.entry, icon: LogIn },
+    { id: 'checkout', label: t.nav.exit, icon: LogOut },
+    { id: 'vehicles', label: t.nav.active, icon: List, badge: parkedCount || undefined },
+    { id: 'notifications', label: t.nav.alerts, icon: Bell, badge: alertsCount || undefined },
+    { id: 'history', label: t.nav.history, icon: Clock },
   ]
 
   return (

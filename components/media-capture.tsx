@@ -3,6 +3,7 @@
 import { useRef, useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Camera, Video, X, RotateCcw, Check, Trash2, ImagePlus, VideoIcon, Square, Play } from 'lucide-react'
+import { useTranslations } from '@/lib/i18n/context'
 import type { MediaItem } from '@/lib/types'
 
 interface MediaCaptureProps {
@@ -23,6 +24,7 @@ export function MediaCapture({ media, onMediaChange, maxItems = 10 }: MediaCaptu
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
   const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const t = useTranslations()
 
   const startCamera = useCallback(async (mode: 'photo' | 'video') => {
     try {
@@ -38,7 +40,7 @@ export function MediaCapture({ media, onMediaChange, maxItems = 10 }: MediaCaptu
       setCaptureMode(mode)
       setIsCapturing(true)
     } catch {
-      alert('No se pudo acceder a la cámara')
+      // Camera access error
     }
   }, [])
 
@@ -168,7 +170,7 @@ export function MediaCapture({ media, onMediaChange, maxItems = 10 }: MediaCaptu
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-3">
             <h2 className="text-lg font-semibold text-foreground">
-              {captureMode === 'photo' ? 'Tomar Foto' : 'Grabar Video'}
+              {captureMode === 'photo' ? t.media.takePhoto : t.media.recordVideo}
             </h2>
             {isRecording && (
               <div className="flex items-center gap-2 text-destructive">
@@ -217,7 +219,7 @@ export function MediaCapture({ media, onMediaChange, maxItems = 10 }: MediaCaptu
                 className="gap-2"
               >
                 <Camera className="h-4 w-4" />
-                Foto
+                {t.vehicle.photos}
               </Button>
               <Button
                 type="button"
@@ -227,7 +229,7 @@ export function MediaCapture({ media, onMediaChange, maxItems = 10 }: MediaCaptu
                 className="gap-2"
               >
                 <Video className="h-4 w-4" />
-                Video
+                {t.vehicle.videos}
               </Button>
             </div>
           )}
@@ -237,11 +239,11 @@ export function MediaCapture({ media, onMediaChange, maxItems = 10 }: MediaCaptu
               <>
                 <Button type="button" variant="outline" size="lg" onClick={retakeMedia} className="gap-2 bg-transparent">
                   <RotateCcw className="h-5 w-5" />
-                  Repetir
+                  {t.media.retake}
                 </Button>
                 <Button type="button" size="lg" onClick={confirmMedia} className="gap-2">
                   <Check className="h-5 w-5" />
-                  Usar {preview.type === 'photo' ? 'Foto' : 'Video'}
+                  {preview.type === 'photo' ? t.media.usePhoto : t.media.useVideo}
                 </Button>
               </>
             ) : captureMode === 'photo' ? (
@@ -284,17 +286,17 @@ export function MediaCapture({ media, onMediaChange, maxItems = 10 }: MediaCaptu
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <label className="text-sm font-medium text-foreground">
-          Fotos y Videos ({media.length}/{maxItems})
+          {t.vehicle.media} ({media.length}/{maxItems})
         </label>
         {media.length < maxItems && (
           <div className="flex gap-2">
             <Button type="button" variant="outline" size="sm" onClick={() => startCamera('photo')} className="gap-1 bg-transparent">
               <ImagePlus className="h-4 w-4" />
-              Foto
+              {t.media.addPhoto}
             </Button>
             <Button type="button" variant="outline" size="sm" onClick={() => startCamera('video')} className="gap-1 bg-transparent">
               <VideoIcon className="h-4 w-4" />
-              Video
+              {t.media.addVideo}
             </Button>
           </div>
         )}
@@ -305,7 +307,7 @@ export function MediaCapture({ media, onMediaChange, maxItems = 10 }: MediaCaptu
           {media.map((item) => (
             <div key={item.id} className="relative aspect-square rounded-lg overflow-hidden group bg-muted">
               {item.type === 'photo' ? (
-                <img src={item.url || "/placeholder.svg"} alt="Foto" className="w-full h-full object-cover" />
+                <img src={item.url || "/placeholder.svg"} alt="Photo" className="w-full h-full object-cover" />
               ) : (
                 <div className="relative w-full h-full">
                   <video src={item.url} className="w-full h-full object-cover" />
@@ -342,17 +344,14 @@ export function MediaCapture({ media, onMediaChange, maxItems = 10 }: MediaCaptu
             <Video className="h-8 w-8 text-muted-foreground" />
           </div>
           <p className="text-sm text-muted-foreground">
-            Toca para tomar fotos o videos del vehículo
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Registra daños existentes o estado general
+            {t.media.takePhoto} {t.common.or} {t.media.recordVideo}
           </p>
         </div>
       )}
 
       {(photoCount > 0 || videoCount > 0) && (
         <p className="text-xs text-muted-foreground text-center">
-          {photoCount} foto{photoCount !== 1 ? 's' : ''} · {videoCount} video{videoCount !== 1 ? 's' : ''}
+          {photoCount} {t.media.photos} · {videoCount} {t.media.videos}
         </p>
       )}
     </div>

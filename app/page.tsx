@@ -8,13 +8,16 @@ import { CheckinForm } from '@/components/checkin-form'
 import { CheckoutForm } from '@/components/checkout-form'
 import { VehiclesList } from '@/components/vehicles-list'
 import { NotificationsPanel } from '@/components/notifications-panel'
+import { LanguageSelector } from '@/components/language-selector'
 import { useInitDemo, useActiveVehicles } from '@/hooks/use-store'
+import { useTranslations } from '@/lib/i18n/context'
 
 export default function ValetParkingApp() {
   const [activeTab, setActiveTab] = useState<TabType>('checkin')
   const [mounted, setMounted] = useState(false)
   const initDemo = useInitDemo()
   const activeVehicles = useActiveVehicles()
+  const t = useTranslations()
 
   useEffect(() => {
     setMounted(true)
@@ -25,7 +28,7 @@ export default function ValetParkingApp() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Car className="h-12 w-12 mx-auto text-primary animate-pulse mb-4" />
-          <p className="text-muted-foreground">Cargando...</p>
+          <p className="text-muted-foreground">{t.common.loading}</p>
         </div>
       </div>
     )
@@ -42,24 +45,27 @@ export default function ValetParkingApp() {
                 <Car className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="font-bold text-foreground text-lg leading-tight">Valet Parking</h1>
+                <h1 className="font-bold text-foreground text-lg leading-tight">{t.header.title}</h1>
                 <p className="text-xs text-muted-foreground">
-                  {activeVehicles.length} vehículo{activeVehicles.length !== 1 ? 's' : ''} activo{activeVehicles.length !== 1 ? 's' : ''}
+                  {activeVehicles.length} {t.header.subtitle.toLowerCase()}
                 </p>
               </div>
             </div>
             
-            {activeVehicles.length === 0 && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={initDemo}
-                className="text-xs gap-1 bg-transparent"
-              >
-                <Database className="h-3 w-3" />
-                Demo
-              </Button>
-            )}
+            <div className="flex items-center gap-2">
+              <LanguageSelector />
+              {activeVehicles.length === 0 && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={initDemo}
+                  className="text-xs gap-1 bg-transparent"
+                >
+                  <Database className="h-3 w-3" />
+                  Demo
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </header>

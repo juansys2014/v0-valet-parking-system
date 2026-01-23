@@ -10,6 +10,7 @@ import { QrCode, Car, Check, ParkingSquare, User } from 'lucide-react'
 import { MediaCapture } from '@/components/media-capture'
 import { QRScanner } from '@/components/qr-scanner'
 import { useVehicleActions } from '@/hooks/use-store'
+import { useTranslations } from '@/lib/i18n/context'
 import type { MediaItem } from '@/lib/types'
 
 interface CheckinFormProps {
@@ -28,6 +29,7 @@ export function CheckinForm({ onSuccess }: CheckinFormProps) {
   const [success, setSuccess] = useState(false)
 
   const { addVehicle, getVehicleByTicket } = useVehicleActions()
+  const t = useTranslations()
 
   const handleQRScan = (code: string) => {
     setTicketCode(code)
@@ -38,13 +40,11 @@ export function CheckinForm({ onSuccess }: CheckinFormProps) {
     e.preventDefault()
     
     if (!ticketCode || !licensePlate) {
-      alert('Por favor completa el código de ticket y la patente')
       return
     }
 
     const existing = getVehicleByTicket(ticketCode)
     if (existing) {
-      alert('Este ticket ya está en uso')
       return
     }
 
@@ -72,7 +72,7 @@ export function CheckinForm({ onSuccess }: CheckinFormProps) {
         onSuccess?.()
       }, 2000)
     } catch {
-      alert('Error al registrar el vehículo')
+      // Error handling
     } finally {
       setIsSubmitting(false)
     }
@@ -86,9 +86,9 @@ export function CheckinForm({ onSuccess }: CheckinFormProps) {
             <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
               <Check className="h-8 w-8 text-accent-foreground" />
             </div>
-            <h3 className="text-xl font-semibold text-foreground mb-2">Vehículo Registrado</h3>
+            <h3 className="text-xl font-semibold text-foreground mb-2">{t.checkin.vehicleRegistered}</h3>
             <p className="text-muted-foreground">
-              Ticket #{ticketCode} - {licensePlate}
+              {t.vehicle.ticket} #{ticketCode} - {licensePlate}
             </p>
           </div>
         </CardContent>
@@ -109,23 +109,23 @@ export function CheckinForm({ onSuccess }: CheckinFormProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Car className="h-5 w-5" />
-            Registrar Vehículo
+            {t.checkin.title}
           </CardTitle>
           <CardDescription>
-            Ingresa los datos del vehículo para registrar la entrada
+            {t.checkin.subtitle}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Ticket Code */}
             <div className="space-y-2">
-              <Label htmlFor="ticketCode">Código de Ticket *</Label>
+              <Label htmlFor="ticketCode">{t.checkin.ticketCode} *</Label>
               <div className="flex gap-2">
                 <Input
                   id="ticketCode"
                   value={ticketCode}
                   onChange={(e) => setTicketCode(e.target.value)}
-                  placeholder="Ej: 001234"
+                  placeholder={t.checkin.ticketPlaceholder}
                   className="flex-1 text-lg"
                 />
                 <Button
@@ -135,19 +135,19 @@ export function CheckinForm({ onSuccess }: CheckinFormProps) {
                   className="gap-2"
                 >
                   <QrCode className="h-5 w-5" />
-                  <span className="hidden sm:inline">Escanear</span>
+                  <span className="hidden sm:inline">{t.checkin.scanQR}</span>
                 </Button>
               </div>
             </div>
 
             {/* License Plate */}
             <div className="space-y-2">
-              <Label htmlFor="licensePlate">Patente *</Label>
+              <Label htmlFor="licensePlate">{t.checkin.licensePlate} *</Label>
               <Input
                 id="licensePlate"
                 value={licensePlate}
                 onChange={(e) => setLicensePlate(e.target.value.toUpperCase())}
-                placeholder="Ej: ABC 123"
+                placeholder={t.checkin.licensePlaceholder}
                 className="text-lg uppercase"
               />
             </div>
@@ -157,25 +157,25 @@ export function CheckinForm({ onSuccess }: CheckinFormProps) {
               <div className="space-y-2">
                 <Label htmlFor="parkingSpot">
                   <ParkingSquare className="h-4 w-4 inline mr-1" />
-                  Ubicación
+                  {t.checkin.parkingSpot}
                 </Label>
                 <Input
                   id="parkingSpot"
                   value={parkingSpot}
                   onChange={(e) => setParkingSpot(e.target.value.toUpperCase())}
-                  placeholder="Ej: A1"
+                  placeholder={t.checkin.parkingPlaceholder}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="attendant">
                   <User className="h-4 w-4 inline mr-1" />
-                  Encargado
+                  {t.checkin.attendantName}
                 </Label>
                 <Input
                   id="attendant"
                   value={attendantName}
                   onChange={(e) => setAttendantName(e.target.value)}
-                  placeholder="Tu nombre"
+                  placeholder={t.checkin.attendantPlaceholder}
                 />
               </div>
             </div>
@@ -185,12 +185,12 @@ export function CheckinForm({ onSuccess }: CheckinFormProps) {
 
             {/* Notes */}
             <div className="space-y-2">
-              <Label htmlFor="notes">Notas / Observaciones</Label>
+              <Label htmlFor="notes">{t.checkin.notes}</Label>
               <Textarea
                 id="notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Daños existentes, objetos de valor, instrucciones especiales..."
+                placeholder={t.checkin.notesPlaceholder}
                 rows={3}
               />
             </div>
@@ -202,7 +202,7 @@ export function CheckinForm({ onSuccess }: CheckinFormProps) {
               size="lg"
               disabled={isSubmitting || !ticketCode || !licensePlate}
             >
-              {isSubmitting ? 'Registrando...' : 'Registrar Entrada'}
+              {isSubmitting ? t.common.loading : t.checkin.registerEntry}
             </Button>
           </form>
         </CardContent>

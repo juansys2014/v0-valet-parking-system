@@ -2,6 +2,7 @@ import React from "react"
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { I18nProvider } from '@/lib/i18n/context'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -9,7 +10,7 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: 'Valet Parking Control',
-  description: 'Sistema de control de valet parking - Registro de vehículos, fotos, y gestión de entregas',
+  description: 'Valet parking control system - Vehicle registration, photos, and delivery management',
   generator: 'v0.app',
   icons: {
     icon: [
@@ -38,7 +39,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans antialiased`}>
-        {children}
+        <I18nProvider>
+          {children}
+        </I18nProvider>
         <Analytics />
       </body>
     </html>

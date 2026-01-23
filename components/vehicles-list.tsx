@@ -1,7 +1,6 @@
 "use client"
 
 import React from "react"
-
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -10,21 +9,22 @@ import { Button } from '@/components/ui/button'
 import { Car, Search, Clock, MapPin, Bell, ArrowRight, Truck } from 'lucide-react'
 import { useActiveVehicles, useVehicleHistory, useVehicleActions } from '@/hooks/use-store'
 import { VehicleDetails } from '@/components/vehicle-details'
+import { useTranslations } from '@/lib/i18n/context'
 import type { Vehicle } from '@/lib/types'
 
 interface VehiclesListProps {
   showHistory?: boolean
 }
 
-function formatTime(date: Date) {
-  return new Date(date).toLocaleTimeString('es-AR', {
+function formatTime(date: Date, locale: string) {
+  return new Date(date).toLocaleTimeString(locale === 'es' ? 'es-ES' : 'en-US', {
     hour: '2-digit',
     minute: '2-digit'
   })
 }
 
-function formatDateTime(date: Date) {
-  return new Date(date).toLocaleString('es-AR', {
+function formatDateTime(date: Date, locale: string) {
+  return new Date(date).toLocaleString(locale === 'es' ? 'es-ES' : 'en-US', {
     day: '2-digit',
     month: '2-digit',
     hour: '2-digit',
@@ -61,9 +61,8 @@ export function VehiclesList({ showHistory = false }: VehiclesListProps) {
   const { updateStatus } = useVehicleActions()
   const [search, setSearch] = useState('')
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null)
+  const t = useTranslations()
 
-  // Para activos: solo mostrar estacionados
-  // Para historial: mostrar todos los entregados
   const vehicles = showHistory 
     ? historyVehicles 
     : activeVehicles.filter(v => v.status === 'parked')
@@ -76,7 +75,6 @@ export function VehiclesList({ showHistory = false }: VehiclesListProps) {
     return matchesSearch
   })
 
-  // Sort by check-in time (most recent first) for active, by delivery time for history
   const sortedVehicles = [...filteredVehicles].sort((a, b) => {
     if (showHistory) {
       const aTime = a.deliveredTime ? new Date(a.deliveredTime).getTime() : 0
@@ -96,7 +94,7 @@ export function VehiclesList({ showHistory = false }: VehiclesListProps) {
       <div className="space-y-4">
         <Button variant="ghost" onClick={() => setSelectedVehicle(null)} className="gap-2">
           <ArrowRight className="h-4 w-4 rotate-180" />
-          Volver a la lista
+          {t.common.back}
         </Button>
         <VehicleDetails 
           vehicle={selectedVehicle} 
@@ -120,12 +118,12 @@ export function VehiclesList({ showHistory = false }: VehiclesListProps) {
               {showHistory ? (
                 <>
                   <Clock className="h-5 w-5" />
-                  Historial de Entregas
+                  {t.vehicles.historyTitle}
                 </>
               ) : (
                 <>
                   <Car className="h-5 w-5" />
-                  Vehículos Estacionados
+                  {t.vehicles.title}
                   <Badge variant="secondary" className="ml-2">
                     {vehicles.length}
                   </Badge>
@@ -134,35 +132,33 @@ export function VehiclesList({ showHistory = false }: VehiclesListProps) {
             </CardTitle>
             <CardDescription className="mt-1">
               {showHistory 
-                ? 'Registro de todos los vehículos entregados'
-                : 'Lista de vehículos actualmente en el valet parking'
+                ? t.vehicles.historySubtitle
+                : t.vehicles.subtitle
               }
             </CardDescription>
           </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por ticket o patente..."
+            placeholder={t.vehicles.searchPlaceholder}
             className="pl-9"
           />
         </div>
 
-        {/* Vehicle List */}
         {sortedVehicles.length === 0 ? (
           <div className="text-center py-8">
             <Car className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <p className="text-muted-foreground">
               {search 
-                ? 'No se encontraron vehículos' 
+                ? t.common.noResults
                 : showHistory 
-                  ? 'No hay historial aún'
-                  : 'No hay vehículos estacionados'
+                  ? t.vehicles.noHistory
+                  : t.vehicles.noVehiclesParked
               }
             </p>
           </div>
@@ -186,20 +182,19 @@ export function VehiclesList({ showHistory = false }: VehiclesListProps) {
                         {vehicle.licensePlate}
                       </p>
                       {showHistory ? (
-                        /* Vista para historial con fechas completas */
                         <div className="mt-2 space-y-1 text-sm">
                           <div className="flex items-center gap-2 text-muted-foreground">
                             <Clock className="h-3 w-3 flex-shrink-0" />
-                            <span>Entrada: {formatDateTime(vehicle.checkinTime)}</span>
+                            <span>{t.vehicles.entry}: {formatDateTime(vehicle.checkinTime, 'es')}</span>
                           </div>
                           {vehicle.deliveredTime && (
                             <>
                               <div className="flex items-center gap-2 text-muted-foreground">
                                 <Truck className="h-3 w-3 flex-shrink-0" />
-                                <span>Salida: {formatDateTime(vehicle.deliveredTime)}</span>
+                                <span>{t.vehicles.exit}: {formatDateTime(vehicle.deliveredTime, 'es')}</span>
                               </div>
                               <div className="flex items-center gap-2 text-primary font-medium">
-                                <span className="ml-5">Duración: {getDuration(vehicle.checkinTime, vehicle.deliveredTime)}</span>
+                                <span className="ml-5">{t.vehicles.duration}: {getDuration(vehicle.checkinTime, vehicle.deliveredTime)}</span>
                               </div>
                             </>
                           )}
@@ -211,11 +206,10 @@ export function VehiclesList({ showHistory = false }: VehiclesListProps) {
                           )}
                         </div>
                       ) : (
-                        /* Vista para activos */
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
-                            {formatTime(vehicle.checkinTime)}
+                            {formatTime(vehicle.checkinTime, 'es')}
                             <span className="text-xs">({getElapsedTime(vehicle.checkinTime)})</span>
                           </span>
                           {vehicle.parkingSpot && (
@@ -233,7 +227,6 @@ export function VehiclesList({ showHistory = false }: VehiclesListProps) {
                       )}
                     </div>
 
-                    {/* Botón de solicitar (solo para activos, no historial) */}
                     {!showHistory && (
                       <Button
                         type="button"
@@ -242,7 +235,7 @@ export function VehiclesList({ showHistory = false }: VehiclesListProps) {
                         className="gap-2 flex-shrink-0"
                       >
                         <Bell className="h-4 w-4" />
-                        Solicitar
+                        {t.vehicles.request}
                       </Button>
                     )}
                   </div>

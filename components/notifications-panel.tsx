@@ -11,14 +11,8 @@ import {
 } from 'lucide-react'
 import { useActiveVehicles, useVehicleActions } from '@/hooks/use-store'
 import { VehicleDetails } from '@/components/vehicle-details'
+import { useTranslations } from '@/lib/i18n/context'
 import type { Vehicle } from '@/lib/types'
-
-function formatTime(date: Date) {
-  return new Date(date).toLocaleTimeString('es-AR', {
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
 
 function getElapsedTime(date: Date) {
   const now = new Date()
@@ -37,8 +31,8 @@ export function NotificationsPanel() {
   const { updateStatus } = useVehicleActions()
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null)
   const [attendantNames, setAttendantNames] = useState<Record<string, string>>({})
+  const t = useTranslations()
 
-  // Filtrar vehículos solicitados y listos
   const requestedVehicles = activeVehicles.filter(v => v.status === 'requested')
   const readyVehicles = activeVehicles.filter(v => v.status === 'ready')
   const alertVehicles = [...requestedVehicles, ...readyVehicles]
@@ -62,7 +56,7 @@ export function NotificationsPanel() {
       <div className="space-y-4">
         <Button variant="ghost" onClick={() => setSelectedVehicle(null)} className="gap-2">
           <ArrowRight className="h-4 w-4 rotate-180" />
-          Volver a alertas
+          {t.common.back}
         </Button>
         <VehicleDetails 
           vehicle={selectedVehicle} 
@@ -84,9 +78,9 @@ export function NotificationsPanel() {
         <CardContent className="pt-6">
           <div className="text-center py-12">
             <Bell className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-            <p className="text-lg font-medium text-foreground">No hay alertas pendientes</p>
+            <p className="text-lg font-medium text-foreground">{t.alerts.noAlerts}</p>
             <p className="text-muted-foreground mt-1">
-              Los vehículos solicitados aparecerán aquí
+              {t.alerts.allClear}
             </p>
           </div>
         </CardContent>
@@ -96,19 +90,18 @@ export function NotificationsPanel() {
 
   return (
     <div className="space-y-4">
-      {/* Vehículos Solicitados (pendientes de preparar) */}
       {requestedVehicles.length > 0 && (
         <Card className="border-warning/50">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-warning">
               <Bell className="h-5 w-5" />
-              Vehículos Solicitados
+              {t.alerts.requested}
               <Badge className="bg-warning text-warning-foreground ml-2">
                 {requestedVehicles.length}
               </Badge>
             </CardTitle>
             <CardDescription>
-              Clientes esperando - preparar estos vehículos
+              {t.alerts.requestedDesc}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -116,7 +109,6 @@ export function NotificationsPanel() {
               <Card key={vehicle.id} className="bg-warning/5 border-warning/30">
                 <CardContent className="p-4">
                   <div className="space-y-3">
-                    {/* Info del vehículo */}
                     <div 
                       className="flex items-start justify-between cursor-pointer"
                       onClick={() => setSelectedVehicle(vehicle)}
@@ -127,7 +119,7 @@ export function NotificationsPanel() {
                             #{vehicle.ticketCode}
                           </span>
                           <Badge className="bg-warning text-warning-foreground">
-                            Solicitado
+                            {t.status.requested}
                           </Badge>
                         </div>
                         <p className="text-xl font-semibold text-foreground">
@@ -142,7 +134,7 @@ export function NotificationsPanel() {
                           )}
                           <span className="flex items-center gap-1">
                             <Clock className="h-3 w-3" />
-                            Solicitado hace {getElapsedTime(vehicle.requestedTime || vehicle.checkinTime)}
+                            {t.alerts.waitingTime} {getElapsedTime(vehicle.requestedTime || vehicle.checkinTime)}
                           </span>
                         </div>
                         {vehicle.notes && (
@@ -154,13 +146,12 @@ export function NotificationsPanel() {
                       </div>
                     </div>
 
-                    {/* Acciones */}
                     <div className="flex items-center gap-2 pt-2 border-t border-warning/30">
                       <div className="flex-1">
                         <Input
                           value={attendantNames[vehicle.id] || ''}
                           onChange={(e) => updateAttendantName(vehicle.id, e.target.value)}
-                          placeholder="Tu nombre (opcional)"
+                          placeholder={`${t.alerts.yourName} (${t.common.optional})`}
                           className="h-9 text-sm"
                         />
                       </div>
@@ -169,7 +160,7 @@ export function NotificationsPanel() {
                         className="bg-accent hover:bg-accent/90 text-accent-foreground gap-2"
                       >
                         <CheckCircle2 className="h-4 w-4" />
-                        Listo
+                        {t.alerts.markReady}
                       </Button>
                     </div>
                   </div>
@@ -180,19 +171,18 @@ export function NotificationsPanel() {
         </Card>
       )}
 
-      {/* Vehículos Listos (pendientes de entregar) */}
       {readyVehicles.length > 0 && (
         <Card className="border-accent/50">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-accent">
               <CheckCircle2 className="h-5 w-5" />
-              Vehículos Listos
+              {t.alerts.ready}
               <Badge className="bg-accent text-accent-foreground ml-2">
                 {readyVehicles.length}
               </Badge>
             </CardTitle>
             <CardDescription>
-              Listos para entregar al cliente
+              {t.alerts.readyDesc}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -200,7 +190,6 @@ export function NotificationsPanel() {
               <Card key={vehicle.id} className="bg-accent/5 border-accent/30">
                 <CardContent className="p-4">
                   <div className="space-y-3">
-                    {/* Info del vehículo */}
                     <div 
                       className="flex items-start justify-between cursor-pointer"
                       onClick={() => setSelectedVehicle(vehicle)}
@@ -211,7 +200,7 @@ export function NotificationsPanel() {
                             #{vehicle.ticketCode}
                           </span>
                           <Badge className="bg-accent text-accent-foreground">
-                            Listo
+                            {t.status.ready}
                           </Badge>
                         </div>
                         <p className="text-xl font-semibold text-foreground">
@@ -227,20 +216,19 @@ export function NotificationsPanel() {
                           {vehicle.deliveryAttendant && (
                             <span className="flex items-center gap-1">
                               <User className="h-3 w-3" />
-                              Preparado por {vehicle.deliveryAttendant}
+                              {vehicle.deliveryAttendant}
                             </span>
                           )}
                         </div>
                       </div>
                     </div>
 
-                    {/* Acciones */}
                     <div className="flex items-center gap-2 pt-2 border-t border-accent/30">
                       <div className="flex-1">
                         <Input
                           value={attendantNames[vehicle.id] || ''}
                           onChange={(e) => updateAttendantName(vehicle.id, e.target.value)}
-                          placeholder="Tu nombre (opcional)"
+                          placeholder={`${t.alerts.yourName} (${t.common.optional})`}
                           className="h-9 text-sm"
                         />
                       </div>
@@ -249,7 +237,7 @@ export function NotificationsPanel() {
                         className="gap-2"
                       >
                         <Truck className="h-4 w-4" />
-                        Entregado
+                        {t.alerts.confirmDelivery}
                       </Button>
                     </div>
                   </div>
