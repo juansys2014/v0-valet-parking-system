@@ -10,6 +10,7 @@ import { QrCode, Search, Car, Clock, MapPin, ArrowRight, Bell, AlertCircle, LogO
 import { QRScanner } from '@/components/qr-scanner'
 import { useActiveVehicles, useVehicleActions } from '@/hooks/use-store'
 import { useTranslations, useLanguage } from '@/lib/i18n/context'
+import { useNotificationSound } from '@/hooks/use-notification-sound'
 import type { Vehicle } from '@/lib/types'
 
 function formatTime(date: Date, locale: string) {
@@ -46,6 +47,7 @@ export function CheckoutForm() {
   const { updateStatus, quickExit } = useVehicleActions()
   const t = useTranslations()
   const { language } = useLanguage()
+  const { playSound } = useNotificationSound()
 
   useEffect(() => {
     if (confirmedExit) {
@@ -103,6 +105,7 @@ export function CheckoutForm() {
         licensePlate: pending.vehicle.licensePlate,
         isQuickExit: false 
       })
+      playSound('alert')
     }
     setPending(null)
     setSearchTerm('')
@@ -123,6 +126,7 @@ export function CheckoutForm() {
       licensePlate,
       isQuickExit: true
     })
+    playSound('alert')
     setPending(null)
     setSearchTerm('')
     setQuickExitLicensePlate('')
