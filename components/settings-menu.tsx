@@ -41,35 +41,35 @@ export function SettingsMenu() {
           <span className="sr-only">{t.settings.title}</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-[300px] sm:w-[340px]">
-        <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
+      <SheetContent side="right" className="w-full max-w-[100vw] sm:max-w-[340px] p-0 flex flex-col">
+        <SheetHeader className="px-4 pt-4 pb-2 border-b">
+          <SheetTitle className="flex items-center gap-2 text-lg">
             <Menu className="h-5 w-5" />
             {t.settings.title}
           </SheetTitle>
         </SheetHeader>
 
-        <div className="mt-6 space-y-6">
+        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
           {/* Idioma */}
           <div className="space-y-3">
             <Label className="text-sm font-medium flex items-center gap-2">
               <Globe className="h-4 w-4" />
               {t.settings.language}
             </Label>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <Button
                 variant={language === 'es' ? 'default' : 'outline'}
-                size="sm"
+                size="lg"
                 onClick={() => setLanguage('es')}
-                className={language === 'es' ? '' : 'bg-transparent'}
+                className={`h-12 text-base ${language === 'es' ? '' : 'bg-transparent'}`}
               >
                 Espanol
               </Button>
               <Button
                 variant={language === 'en' ? 'default' : 'outline'}
-                size="sm"
+                size="lg"
                 onClick={() => setLanguage('en')}
-                className={language === 'en' ? '' : 'bg-transparent'}
+                className={`h-12 text-base ${language === 'en' ? '' : 'bg-transparent'}`}
               >
                 English
               </Button>
@@ -79,46 +79,53 @@ export function SettingsMenu() {
           <Separator />
 
           {/* Funciones visibles */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             <Label className="text-sm font-medium">
               {t.settings.visibleFeatures}
             </Label>
             
-            <div className="space-y-3">
+            <div className="space-y-2">
               {features.map(({ key, label, icon: Icon }) => (
-                <div 
+                <button
+                  type="button"
                   key={key} 
-                  className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted/50"
+                  className="flex items-center justify-between w-full py-3 px-4 rounded-lg bg-muted/50 active:bg-muted transition-colors touch-manipulation"
+                  onClick={() => {
+                    if (!(activeCount <= 1 && settings[key])) {
+                      updateSetting(key, !settings[key])
+                    }
+                  }}
                 >
                   <div className="flex items-center gap-3">
-                    <Icon className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">{label}</span>
+                    <Icon className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-base">{label}</span>
                   </div>
                   <Switch
                     checked={settings[key]}
                     onCheckedChange={(checked) => updateSetting(key, checked)}
                     disabled={activeCount <= 1 && settings[key]}
+                    className="pointer-events-none"
                   />
-                </div>
+                </button>
               ))}
             </div>
 
             {activeCount <= 1 && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground text-center">
                 Debe haber al menos una funcion activa
               </p>
             )}
           </div>
+        </div>
 
-          <Separator />
-
-          {/* Restaurar */}
+        {/* Footer fijo */}
+        <div className="border-t px-4 py-4 mt-auto">
           <Button 
             variant="outline" 
             onClick={resetSettings}
-            className="w-full gap-2 bg-transparent"
+            className="w-full h-12 gap-2 bg-transparent text-base"
           >
-            <RotateCcw className="h-4 w-4" />
+            <RotateCcw className="h-5 w-5" />
             {t.settings.reset}
           </Button>
         </div>
