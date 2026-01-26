@@ -177,6 +177,11 @@ export function VehiclesList({ showHistory = false }: VehiclesListProps) {
                         <span className="font-mono font-bold text-lg">
                           #{vehicle.ticketCode}
                         </span>
+                        {showHistory && vehicle.wasRegistered === false && (
+                          <Badge variant="outline" className="text-amber-600 border-amber-300 text-xs">
+                            {t.vehicles.quickExit}
+                          </Badge>
+                        )}
                       </div>
                       <p className="text-xl font-semibold text-foreground">
                         {vehicle.licensePlate}

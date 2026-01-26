@@ -69,6 +69,15 @@ export const translations = {
       requestSentDesc: 'Aparecerá en Alertas para que el personal lo prepare',
       noVehiclesAvailable: 'No hay vehículos disponibles',
       vehicleInfo: 'Información del vehículo',
+      // Salida rápida (vehículo no registrado)
+      quickExit: 'Salida Rápida',
+      quickExitDesc: 'El vehículo no está registrado en el sistema',
+      quickExitQuestion: '¿Desea dar salida a este vehículo sin registro previo?',
+      quickExitConfirm: 'Confirmar Salida',
+      quickExitSuccess: 'Salida registrada',
+      quickExitSuccessDesc: 'El vehículo fue dado de baja sin registro previo',
+      enterLicensePlate: 'Ingrese la patente',
+      notRegistered: 'No registrado',
     },
 
     // Vehicles list
@@ -85,6 +94,7 @@ export const translations = {
       exit: 'Salida',
       duration: 'Duración',
       location: 'Ubicación',
+      quickExit: 'Salida rápida',
     },
 
     // Alerts / Notifications
@@ -234,6 +244,15 @@ export const translations = {
       requestSentDesc: 'It will appear in Alerts for staff to prepare',
       noVehiclesAvailable: 'No vehicles available',
       vehicleInfo: 'Vehicle information',
+      // Quick exit (unregistered vehicle)
+      quickExit: 'Quick Exit',
+      quickExitDesc: 'Vehicle is not registered in the system',
+      quickExitQuestion: 'Do you want to check out this vehicle without prior registration?',
+      quickExitConfirm: 'Confirm Exit',
+      quickExitSuccess: 'Exit registered',
+      quickExitSuccessDesc: 'Vehicle was checked out without prior registration',
+      enterLicensePlate: 'Enter license plate',
+      notRegistered: 'Not registered',
     },
 
     // Vehicles list
@@ -250,6 +269,7 @@ export const translations = {
       exit: 'Exit',
       duration: 'Duration',
       location: 'Location',
+      quickExit: 'Quick exit',
     },
 
     // Alerts / Notifications

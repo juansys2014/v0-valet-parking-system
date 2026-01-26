@@ -66,7 +66,11 @@ export function useVehicleActions() {
     return store.updateVehicleStatus(id, status, attendant)
   }, [])
 
-  return { addVehicle, getVehicleByTicket, getVehicleById, updateStatus }
+  const quickExit = useCallback((vehicle: { ticketCode: string; licensePlate: string }) => {
+    return store.quickExit(vehicle)
+  }, [])
+
+  return { addVehicle, getVehicleByTicket, getVehicleById, updateStatus, quickExit }
 }
 
 export function useNotificationActions() {

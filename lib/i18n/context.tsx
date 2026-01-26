@@ -53,3 +53,8 @@ export function useTranslations() {
   const { t } = useI18n()
   return t
 }
+
+export function useLanguage() {
+  const { language, setLanguage } = useI18n()
+  return { language, setLanguage }
+}

@@ -83,6 +83,34 @@ export function addVehicle(vehicle: AddVehicleInput): Vehicle {
     attendantName: vehicle.attendantName,
     status: "parked",
     checkinTime: new Date(),
+    wasRegistered: true,
+  }
+  vehicles = [...vehicles, newVehicle]
+  notifyListeners()
+  return newVehicle
+}
+
+// Salida rápida - para vehículos que no fueron registrados en entrada
+interface QuickExitInput {
+  ticketCode: string
+  licensePlate: string
+}
+
+export function quickExit(vehicle: QuickExitInput): Vehicle {
+  const now = new Date()
+  const newVehicle: Vehicle = {
+    id: crypto.randomUUID(),
+    ticketCode: vehicle.ticketCode,
+    licensePlate: vehicle.licensePlate,
+    photos: [],
+    videos: [],
+    media: [],
+    notes: "",
+    status: "delivered",
+    checkinTime: now,
+    deliveredTime: now,
+    checkoutTime: now,
+    wasRegistered: false,
   }
   vehicles = [...vehicles, newVehicle]
   notifyListeners()
