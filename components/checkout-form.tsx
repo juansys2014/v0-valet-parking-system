@@ -366,28 +366,26 @@ export function CheckoutForm() {
         {/* Opción de salida rápida cuando no se encuentra el vehículo */}
         {showQuickExitOption && (
           <Card 
-            className="border-amber-500/30 bg-amber-500/5 cursor-pointer hover:shadow-md transition-all"
+            className="border-amber-500/30 bg-amber-500/5 cursor-pointer hover:shadow-md transition-all overflow-hidden"
             onClick={handleSelectQuickExit}
           >
             <CardContent className="py-4">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <div className="flex items-center gap-4 flex-1 min-w-0">
-                  <div className="w-12 h-12 bg-amber-500/20 rounded-full flex items-center justify-center flex-shrink-0">
-                    <LogOut className="h-6 w-6 text-amber-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono font-bold text-lg">#{searchTerm.trim()}</span>
-                      <Badge variant="outline" className="text-amber-600 border-amber-300">
-                        {t.checkout.notRegistered}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {t.checkout.quickExitDesc}
-                    </p>
-                  </div>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-amber-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <LogOut className="h-6 w-6 text-amber-600" />
                 </div>
-                <Button variant="outline" className="w-full sm:w-auto gap-2 border-amber-500/50 text-amber-700 hover:bg-amber-500/10 bg-transparent flex-shrink-0">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-mono font-bold text-lg truncate">#{searchTerm.trim()}</span>
+                    <Badge variant="outline" className="text-amber-600 border-amber-300 whitespace-nowrap">
+                      {t.checkout.notRegistered}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                    {t.checkout.quickExitDesc}
+                  </p>
+                </div>
+                <Button variant="outline" className="gap-1 border-amber-500/50 text-amber-700 hover:bg-amber-500/10 bg-transparent flex-shrink-0 whitespace-nowrap px-3">
                   {t.checkout.quickExit}
                 </Button>
               </div>
