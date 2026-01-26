@@ -3,12 +3,12 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
@@ -34,20 +34,20 @@ export function SettingsMenu() {
   const activeCount = Object.values(settings).filter(Boolean).length
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
+    <Drawer open={open} onOpenChange={setOpen}>
+      <DrawerTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Menu className="h-5 w-5" />
           <span className="sr-only">{t.settings.title}</span>
         </Button>
-      </SheetTrigger>
-      <SheetContent side="right" className="w-full max-w-[100vw] sm:max-w-[340px] p-0 flex flex-col">
-        <SheetHeader className="px-4 pt-4 pb-2 border-b">
-          <SheetTitle className="flex items-center gap-2 text-lg">
+      </DrawerTrigger>
+      <DrawerContent className="max-h-[85vh]">
+        <DrawerHeader className="px-4 pt-4 pb-2 border-b">
+          <DrawerTitle className="flex items-center gap-2 text-lg">
             <Menu className="h-5 w-5" />
             {t.settings.title}
-          </SheetTitle>
-        </SheetHeader>
+          </DrawerTitle>
+        </DrawerHeader>
 
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-5">
           {/* Idioma */}
@@ -129,7 +129,7 @@ export function SettingsMenu() {
             {t.settings.reset}
           </Button>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DrawerContent>
+    </Drawer>
   )
 }
