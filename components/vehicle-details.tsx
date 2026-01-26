@@ -11,7 +11,6 @@ import {
 } from 'lucide-react'
 import { useVehicleActions } from '@/hooks/use-store'
 import { useTranslations } from '@/lib/i18n/context'
-import { useTranslate } from '@/hooks/use-translate'
 import type { Vehicle, VehicleStatus } from '@/lib/types'
 
 interface VehicleDetailsProps {
@@ -26,7 +25,6 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null)
   const { updateStatus } = useVehicleActions()
   const t = useTranslations()
-  const { text: translatedNotes, isTranslating: isTranslatingNotes } = useTranslate(vehicle.notes)
 
   const statusConfig: Record<VehicleStatus, { label: string; color: string; icon: typeof Car }> = {
     parked: { label: t.status.parked, color: 'bg-muted text-muted-foreground', icon: Car },
@@ -152,9 +150,7 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
               {vehicle.notes && (
                 <div className="flex items-start gap-1 text-sm text-warning">
                   <AlertTriangle className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                  <span className={`line-clamp-1 ${isTranslatingNotes ? 'animate-pulse' : ''}`}>
-                    {translatedNotes || vehicle.notes}
-                  </span>
+                  <span className="line-clamp-1">{vehicle.notes}</span>
                 </div>
               )}
             </div>
@@ -294,9 +290,7 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
                   <p className="text-xs font-medium text-warning uppercase tracking-wide mb-1">
                     {t.vehicle.notes}
                   </p>
-                  <p className={`text-sm text-foreground ${isTranslatingNotes ? 'animate-pulse' : ''}`}>
-                    {translatedNotes || vehicle.notes}
-                  </p>
+                  <p className="text-sm text-foreground">{vehicle.notes}</p>
                 </div>
               </div>
             </div>

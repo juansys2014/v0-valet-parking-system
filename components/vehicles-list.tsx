@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button'
 import { Car, Search, Clock, MapPin, Bell, ArrowRight, Truck } from 'lucide-react'
 import { useActiveVehicles, useVehicleHistory, useVehicleActions } from '@/hooks/use-store'
 import { VehicleDetails } from '@/components/vehicle-details'
-import { TranslatedNotes } from '@/components/translated-notes'
 import { useTranslations } from '@/lib/i18n/context'
 import type { Vehicle } from '@/lib/types'
 
@@ -228,7 +227,7 @@ export function VehiclesList({ showHistory = false }: VehiclesListProps) {
                       )}
                       {vehicle.notes && (
                         <p className="mt-2 text-sm text-warning line-clamp-1">
-                          <TranslatedNotes notes={vehicle.notes} />
+                          {vehicle.notes}
                         </p>
                       )}
                     </div>
