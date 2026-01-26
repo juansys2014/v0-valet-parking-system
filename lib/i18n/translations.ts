@@ -172,6 +172,19 @@ export const translations = {
       hours: '{hours}h {minutes}m',
       minutes: '{minutes}m',
     },
+
+    // Settings
+    settings: {
+      title: 'Configuracion',
+      visibleFeatures: 'Funciones visibles',
+      showEntry: 'Mostrar Entrada',
+      showExit: 'Mostrar Salida',
+      showActive: 'Mostrar Activos',
+      showAlerts: 'Mostrar Alertas',
+      showHistory: 'Mostrar Historial',
+      language: 'Idioma',
+      reset: 'Restaurar valores',
+    },
   },
 
   en: {
@@ -346,6 +359,19 @@ export const translations = {
       minutesAgo: '{minutes}m ago',
       hours: '{hours}h {minutes}m',
       minutes: '{minutes}m',
+    },
+
+    // Settings
+    settings: {
+      title: 'Settings',
+      visibleFeatures: 'Visible features',
+      showEntry: 'Show Entry',
+      showExit: 'Show Exit',
+      showActive: 'Show Active',
+      showAlerts: 'Show Alerts',
+      showHistory: 'Show History',
+      language: 'Language',
+      reset: 'Reset to defaults',
     },
   },
 } as const
