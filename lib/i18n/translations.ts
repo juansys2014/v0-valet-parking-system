@@ -76,7 +76,7 @@ export const translations = {
       quickExitConfirm: 'Confirmar Salida',
       quickExitSuccess: 'Salida registrada',
       quickExitSuccessDesc: 'El vehículo fue dado de baja sin registro previo',
-      enterLicensePlate: 'Ingrese la patente',
+      enterLicensePlate: 'Patente (opcional)',
       notRegistered: 'No registrado',
     },
 
@@ -251,7 +251,7 @@ export const translations = {
       quickExitConfirm: 'Confirm Exit',
       quickExitSuccess: 'Exit registered',
       quickExitSuccessDesc: 'Vehicle was checked out without prior registration',
-      enterLicensePlate: 'Enter license plate',
+      enterLicensePlate: 'License plate (optional)',
       notRegistered: 'Not registered',
     },
 

@@ -110,16 +110,17 @@ export function CheckoutForm() {
 
   const handleConfirmQuickExit = () => {
     if (!pending || pending.type !== 'unregistered') return
-    if (!quickExitLicensePlate.trim()) return
+    
+    const licensePlate = quickExitLicensePlate.trim().toUpperCase() || '-'
     
     quickExit({
       ticketCode: pending.ticketCode,
-      licensePlate: quickExitLicensePlate.trim().toUpperCase()
+      licensePlate
     })
     
     setConfirmedExit({
       ticketCode: pending.ticketCode,
-      licensePlate: quickExitLicensePlate.trim().toUpperCase(),
+      licensePlate,
       isQuickExit: true
     })
     setPending(null)
@@ -273,7 +274,6 @@ export function CheckoutForm() {
                 </Button>
                 <Button 
                   onClick={handleConfirmQuickExit}
-                  disabled={!quickExitLicensePlate.trim()}
                   className="flex-1 gap-2"
                 >
                   <CheckCircle2 className="h-4 w-4" />
