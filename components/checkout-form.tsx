@@ -6,10 +6,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { QrCode, Search, Car, Clock, MapPin, ArrowRight, Bell, AlertCircle } from 'lucide-react'
+import { QrCode, Search, Car, Clock, MapPin, ArrowRight, Bell, AlertCircle, LogOut, CheckCircle2 } from 'lucide-react'
 import { QRScanner } from '@/components/qr-scanner'
 import { useActiveVehicles, useVehicleActions } from '@/hooks/use-store'
-import { useTranslations } from '@/lib/i18n/context'
+import { useTranslations, useLanguage } from '@/lib/i18n/context'
+import { useNotificationSound } from '@/hooks/use-notification-sound'
 import type { Vehicle } from '@/lib/types'
 
 function formatTime(date: Date, locale: string) {
@@ -31,24 +32,31 @@ function getElapsedTime(date: Date) {
   return `${minutes}m`
 }
 
+type PendingType = 
+  | { type: 'registered'; vehicle: Vehicle }
+  | { type: 'unregistered'; ticketCode: string; licensePlate: string }
+
 export function CheckoutForm() {
   const [showQRScanner, setShowQRScanner] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
-  const [pendingVehicle, setPendingVehicle] = useState<Vehicle | null>(null)
-  const [confirmedVehicle, setConfirmedVehicle] = useState<Vehicle | null>(null)
+  const [pending, setPending] = useState<PendingType | null>(null)
+  const [confirmedExit, setConfirmedExit] = useState<{ ticketCode: string; licensePlate: string; isQuickExit: boolean } | null>(null)
+  const [quickExitLicensePlate, setQuickExitLicensePlate] = useState('')
 
   const activeVehicles = useActiveVehicles()
-  const { updateStatus } = useVehicleActions()
+  const { updateStatus, quickExit } = useVehicleActions()
   const t = useTranslations()
+  const { language } = useLanguage()
+  const { playSound } = useNotificationSound()
 
   useEffect(() => {
-    if (confirmedVehicle) {
+    if (confirmedExit) {
       const timer = setTimeout(() => {
-        setConfirmedVehicle(null)
+        setConfirmedExit(null)
       }, 3000)
       return () => clearTimeout(timer)
     }
-  }, [confirmedVehicle])
+  }, [confirmedExit])
 
   const availableVehicles = useMemo(() => {
     return activeVehicles.filter(v => v.status === 'parked')
@@ -64,32 +72,74 @@ export function CheckoutForm() {
     )
   }, [availableVehicles, searchTerm])
 
+  // Detectar si el término de búsqueda no coincide con ningún vehículo
+  const showQuickExitOption = searchTerm.trim().length >= 3 && filteredVehicles.length === 0
+
   const handleQRScan = (code: string) => {
     setShowQRScanner(false)
     const found = availableVehicles.find(v => v.ticketCode === code)
     if (found) {
-      setPendingVehicle(found)
+      setPending({ type: 'registered', vehicle: found })
     } else {
+      // Si no se encuentra, mostrar opción de salida rápida
       setSearchTerm(code)
     }
   }
 
   const handleSelectVehicle = (vehicle: Vehicle) => {
-    setPendingVehicle(vehicle)
+    setPending({ type: 'registered', vehicle })
+  }
+
+  const handleSelectQuickExit = () => {
+    setPending({ type: 'unregistered', ticketCode: searchTerm.trim(), licensePlate: '' })
+    setQuickExitLicensePlate('')
   }
 
   const handleConfirmRequest = () => {
-    if (!pendingVehicle) return
-    updateStatus(pendingVehicle.id, 'requested')
-    setConfirmedVehicle(pendingVehicle)
-    setPendingVehicle(null)
+    if (!pending) return
+    
+    if (pending.type === 'registered') {
+      updateStatus(pending.vehicle.id, 'requested')
+      setConfirmedExit({ 
+        ticketCode: pending.vehicle.ticketCode, 
+        licensePlate: pending.vehicle.licensePlate,
+        isQuickExit: false 
+      })
+      playSound('alert')
+    }
+    setPending(null)
+    setSearchTerm('')
+  }
+
+  const handleConfirmQuickExit = () => {
+    if (!pending || pending.type !== 'unregistered') return
+    
+    const licensePlate = quickExitLicensePlate.trim().toUpperCase() || '-'
+    
+    quickExit({
+      ticketCode: pending.ticketCode,
+      licensePlate
+    })
+    
+    setConfirmedExit({
+      ticketCode: pending.ticketCode,
+      licensePlate,
+      isQuickExit: true
+    })
+    playSound('alert')
+    setPending(null)
+    setSearchTerm('')
+    setQuickExitLicensePlate('')
   }
 
   const handleCancelPending = () => {
-    setPendingVehicle(null)
+    setPending(null)
+    setQuickExitLicensePlate('')
   }
 
-  if (pendingVehicle) {
+  // Vista de confirmación para vehículo registrado
+  if (pending?.type === 'registered') {
+    const vehicle = pending.vehicle
     return (
       <div className="space-y-4">
         <Button 
@@ -115,31 +165,31 @@ export function CheckoutForm() {
               <div className="bg-muted/50 rounded-lg p-4 text-left space-y-3">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t.vehicle.ticket}</span>
-                  <span className="font-mono font-bold">#{pendingVehicle.ticketCode}</span>
+                  <span className="font-mono font-bold">#{vehicle.ticketCode}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t.vehicle.licensePlate}</span>
-                  <span className="font-bold text-lg">{pendingVehicle.licensePlate}</span>
+                  <span className="font-bold text-lg">{vehicle.licensePlate}</span>
                 </div>
-                {pendingVehicle.parkingSpot && (
+                {vehicle.parkingSpot && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">{t.vehicle.location}</span>
                     <span className="flex items-center gap-1">
                       <MapPin className="h-4 w-4" />
-                      {pendingVehicle.parkingSpot}
+                      {vehicle.parkingSpot}
                     </span>
                   </div>
                 )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t.vehicle.entryTime}</span>
-                  <span>{formatTime(pendingVehicle.checkinTime, 'es')}</span>
+                  <span>{formatTime(vehicle.checkinTime, language)}</span>
                 </div>
               </div>
 
-              {pendingVehicle.notes && (
+              {vehicle.notes && (
                 <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-left">
                   <p className="text-sm text-amber-700 font-medium mb-1">{t.vehicle.notes}:</p>
-                  <p className="text-sm text-foreground">{pendingVehicle.notes}</p>
+                  <p className="text-sm text-foreground">{vehicle.notes}</p>
                 </div>
               )}
 
@@ -166,6 +216,81 @@ export function CheckoutForm() {
     )
   }
 
+  // Vista de confirmación para salida rápida (vehículo no registrado)
+  if (pending?.type === 'unregistered') {
+    return (
+      <div className="space-y-4">
+        <Button 
+          variant="ghost" 
+          onClick={handleCancelPending}
+          className="gap-2"
+        >
+          <ArrowRight className="h-4 w-4 rotate-180" />
+          {t.common.cancel}
+        </Button>
+        
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto">
+                <LogOut className="h-8 w-8 text-amber-600" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-foreground">{t.checkout.quickExit}</h2>
+                <p className="text-muted-foreground mt-1">{t.checkout.quickExitQuestion}</p>
+              </div>
+              
+              <div className="bg-muted/50 rounded-lg p-4 text-left space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">{t.vehicle.ticket}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono font-bold">#{pending.ticketCode}</span>
+                    <Badge variant="outline" className="text-amber-600 border-amber-300">
+                      {t.checkout.notRegistered}
+                    </Badge>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label className="text-muted-foreground">{t.checkout.enterLicensePlate}</Label>
+                  <Input
+                    value={quickExitLicensePlate}
+                    onChange={(e) => setQuickExitLicensePlate(e.target.value.toUpperCase())}
+                    placeholder={t.checkin.licensePlaceholder}
+                    className="text-lg font-semibold"
+                  />
+                </div>
+              </div>
+
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-left">
+                <p className="text-sm text-amber-700">
+                  {t.checkout.quickExitDesc}
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <Button 
+                  variant="outline"
+                  onClick={handleCancelPending}
+                  className="flex-1 bg-transparent"
+                >
+                  {t.common.cancel}
+                </Button>
+                <Button 
+                  onClick={handleConfirmQuickExit}
+                  className="flex-1 gap-2"
+                >
+                  <CheckCircle2 className="h-4 w-4" />
+                  {t.checkout.quickExitConfirm}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <>
       {showQRScanner && (
@@ -176,20 +301,27 @@ export function CheckoutForm() {
       )}
 
       <div className="space-y-4">
-        {confirmedVehicle && (
-          <Card className="border-amber-500/30 bg-amber-500/5">
+        {/* Mensaje de confirmación */}
+        {confirmedExit && (
+          <Card className={confirmedExit.isQuickExit ? "border-green-500/30 bg-green-500/5" : "border-amber-500/30 bg-amber-500/5"}>
             <CardContent className="pt-4 pb-4">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Bell className="h-5 w-5 text-amber-600" />
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${confirmedExit.isQuickExit ? "bg-green-500/20" : "bg-amber-500/20"}`}>
+                  {confirmedExit.isQuickExit ? (
+                    <CheckCircle2 className="h-5 w-5 text-green-600" />
+                  ) : (
+                    <Bell className="h-5 w-5 text-amber-600" />
+                  )}
                 </div>
                 <div className="flex-1">
-                  <p className="font-semibold text-foreground">{t.checkout.requestSent}</p>
+                  <p className="font-semibold text-foreground">
+                    {confirmedExit.isQuickExit ? t.checkout.quickExitSuccess : t.checkout.requestSent}
+                  </p>
                   <p className="text-sm text-muted-foreground">
-                    <span className="font-mono font-bold">#{confirmedVehicle.ticketCode}</span> - {confirmedVehicle.licensePlate}
+                    <span className="font-mono font-bold">#{confirmedExit.ticketCode}</span> - {confirmedExit.licensePlate}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {t.checkout.requestSentDesc}
+                    {confirmedExit.isQuickExit ? t.checkout.quickExitSuccessDesc : t.checkout.requestSentDesc}
                   </p>
                 </div>
               </div>
@@ -231,6 +363,36 @@ export function CheckoutForm() {
           </CardContent>
         </Card>
 
+        {/* Opción de salida rápida cuando no se encuentra el vehículo */}
+        {showQuickExitOption && (
+          <Card 
+            className="border-amber-500/30 bg-amber-500/5 cursor-pointer hover:shadow-md transition-all"
+            onClick={handleSelectQuickExit}
+          >
+            <CardContent className="py-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-amber-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+                  <LogOut className="h-6 w-6 text-amber-600" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono font-bold text-lg">#{searchTerm.trim()}</span>
+                    <Badge variant="outline" className="text-amber-600 border-amber-300">
+                      {t.checkout.notRegistered}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {t.checkout.quickExitDesc}
+                  </p>
+                </div>
+                <Button variant="outline" className="gap-2 border-amber-500/50 text-amber-700 hover:bg-amber-500/10 bg-transparent">
+                  {t.checkout.quickExit}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="space-y-2">
           <div className="flex items-center justify-between px-1">
             <Label className="text-muted-foreground">
@@ -248,7 +410,7 @@ export function CheckoutForm() {
             )}
           </div>
 
-          {filteredVehicles.length === 0 ? (
+          {filteredVehicles.length === 0 && !showQuickExitOption ? (
             <Card>
               <CardContent className="py-8 text-center text-muted-foreground">
                 {searchTerm ? (
@@ -291,7 +453,7 @@ export function CheckoutForm() {
                       <div className="text-right space-y-1">
                         <div className="flex items-center justify-end gap-1 text-sm text-muted-foreground">
                           <Clock className="h-3 w-3" />
-                          <span>{formatTime(vehicle.checkinTime, 'es')}</span>
+                          <span>{formatTime(vehicle.checkinTime, language)}</span>
                           <span className="text-xs">({getElapsedTime(vehicle.checkinTime)})</span>
                         </div>
                         {vehicle.parkingSpot && (

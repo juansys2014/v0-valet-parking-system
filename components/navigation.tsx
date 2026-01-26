@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { useActiveVehicles } from '@/hooks/use-store'
 import { useTranslations } from '@/lib/i18n/context'
+import { useSettings } from '@/lib/settings/context'
 
 export type TabType = 'checkin' | 'checkout' | 'vehicles' | 'notifications' | 'history'
 
@@ -23,16 +24,20 @@ interface NavigationProps {
 export function Navigation({ activeTab, onTabChange }: NavigationProps) {
   const activeVehicles = useActiveVehicles()
   const t = useTranslations()
+  const { settings } = useSettings()
   const parkedCount = activeVehicles.filter(v => v.status === 'parked').length
   const alertsCount = activeVehicles.filter(v => v.status === 'requested' || v.status === 'ready').length
 
-  const tabs: { id: TabType; label: string; icon: typeof Car; badge?: number }[] = [
-    { id: 'checkin', label: t.nav.entry, icon: LogIn },
-    { id: 'checkout', label: t.nav.exit, icon: LogOut },
-    { id: 'vehicles', label: t.nav.active, icon: List, badge: parkedCount || undefined },
-    { id: 'notifications', label: t.nav.alerts, icon: Bell, badge: alertsCount || undefined },
-    { id: 'history', label: t.nav.history, icon: Clock },
+  const allTabs: { id: TabType; label: string; icon: typeof Car; badge?: number; settingKey: keyof typeof settings }[] = [
+    { id: 'checkin', label: t.nav.entry, icon: LogIn, settingKey: 'showCheckin' },
+    { id: 'checkout', label: t.nav.exit, icon: LogOut, settingKey: 'showCheckout' },
+    { id: 'vehicles', label: t.nav.active, icon: List, badge: parkedCount || undefined, settingKey: 'showVehicles' },
+    { id: 'notifications', label: t.nav.alerts, icon: Bell, badge: alertsCount || undefined, settingKey: 'showAlerts' },
+    { id: 'history', label: t.nav.history, icon: Clock, settingKey: 'showHistory' },
   ]
+
+  // Filtrar solo las pestanas habilitadas
+  const tabs = allTabs.filter(tab => settings[tab.settingKey])
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-40 safe-area-inset-bottom">

@@ -83,8 +83,45 @@ export function addVehicle(vehicle: AddVehicleInput): Vehicle {
     attendantName: vehicle.attendantName,
     status: "parked",
     checkinTime: new Date(),
+    wasRegistered: true,
   }
   vehicles = [...vehicles, newVehicle]
+  notifyListeners()
+  return newVehicle
+}
+
+// Salida rápida - para vehículos que no fueron registrados en entrada
+// Se crea como "requested" para que aparezca en Alertas
+interface QuickExitInput {
+  ticketCode: string
+  licensePlate: string
+}
+
+export function quickExit(vehicle: QuickExitInput): Vehicle {
+  const now = new Date()
+  const newVehicle: Vehicle = {
+    id: crypto.randomUUID(),
+    ticketCode: vehicle.ticketCode,
+    licensePlate: vehicle.licensePlate,
+    photos: [],
+    videos: [],
+    media: [],
+    notes: "",
+    status: "requested",
+    checkinTime: now,
+    requestedTime: now,
+    wasRegistered: false,
+  }
+  vehicles = [...vehicles, newVehicle]
+  
+  // Crear notificación para el personal
+  addNotification({
+    vehicleId: newVehicle.id,
+    ticketCode: vehicle.ticketCode,
+    licensePlate: vehicle.licensePlate,
+    message: `Salida rápida - Ticket #${vehicle.ticketCode} - Patente: ${vehicle.licensePlate}`,
+  })
+  
   notifyListeners()
   return newVehicle
 }

@@ -69,6 +69,15 @@ export const translations = {
       requestSentDesc: 'Aparecerá en Alertas para que el personal lo prepare',
       noVehiclesAvailable: 'No hay vehículos disponibles',
       vehicleInfo: 'Información del vehículo',
+      // Salida rápida (vehículo no registrado)
+      quickExit: 'Salida Rápida',
+      quickExitDesc: 'El vehículo no está registrado en el sistema',
+      quickExitQuestion: '¿Desea dar salida a este vehículo sin registro previo?',
+      quickExitConfirm: 'Confirmar Salida',
+      quickExitSuccess: 'Solicitud enviada',
+      quickExitSuccessDesc: 'Aparecerá en Alertas para que el personal lo prepare',
+      enterLicensePlate: 'Patente (opcional)',
+      notRegistered: 'No registrado',
     },
 
     // Vehicles list
@@ -85,6 +94,7 @@ export const translations = {
       exit: 'Salida',
       duration: 'Duración',
       location: 'Ubicación',
+      quickExit: 'Salida rápida',
     },
 
     // Alerts / Notifications
@@ -162,6 +172,19 @@ export const translations = {
       hours: '{hours}h {minutes}m',
       minutes: '{minutes}m',
     },
+
+    // Settings
+    settings: {
+      title: 'Configuracion',
+      visibleFeatures: 'Funciones visibles',
+      showEntry: 'Mostrar Entrada',
+      showExit: 'Mostrar Salida',
+      showActive: 'Mostrar Activos',
+      showAlerts: 'Mostrar Alertas',
+      showHistory: 'Mostrar Historial',
+      language: 'Idioma',
+      reset: 'Restaurar valores',
+    },
   },
 
   en: {
@@ -234,6 +257,15 @@ export const translations = {
       requestSentDesc: 'It will appear in Alerts for staff to prepare',
       noVehiclesAvailable: 'No vehicles available',
       vehicleInfo: 'Vehicle information',
+      // Quick exit (unregistered vehicle)
+      quickExit: 'Quick Exit',
+      quickExitDesc: 'Vehicle is not registered in the system',
+      quickExitQuestion: 'Do you want to check out this vehicle without prior registration?',
+      quickExitConfirm: 'Confirm Exit',
+      quickExitSuccess: 'Request sent',
+      quickExitSuccessDesc: 'It will appear in Alerts for staff to prepare',
+      enterLicensePlate: 'License plate (optional)',
+      notRegistered: 'Not registered',
     },
 
     // Vehicles list
@@ -250,6 +282,7 @@ export const translations = {
       exit: 'Exit',
       duration: 'Duration',
       location: 'Location',
+      quickExit: 'Quick exit',
     },
 
     // Alerts / Notifications
@@ -326,6 +359,19 @@ export const translations = {
       minutesAgo: '{minutes}m ago',
       hours: '{hours}h {minutes}m',
       minutes: '{minutes}m',
+    },
+
+    // Settings
+    settings: {
+      title: 'Settings',
+      visibleFeatures: 'Visible features',
+      showEntry: 'Show Entry',
+      showExit: 'Show Exit',
+      showActive: 'Show Active',
+      showAlerts: 'Show Alerts',
+      showHistory: 'Show History',
+      language: 'Language',
+      reset: 'Reset to defaults',
     },
   },
 } as const

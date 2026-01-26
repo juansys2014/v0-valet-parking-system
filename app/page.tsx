@@ -8,9 +8,10 @@ import { CheckinForm } from '@/components/checkin-form'
 import { CheckoutForm } from '@/components/checkout-form'
 import { VehiclesList } from '@/components/vehicles-list'
 import { NotificationsPanel } from '@/components/notifications-panel'
-import { LanguageSelector } from '@/components/language-selector'
+import { SettingsMenu } from '@/components/settings-menu'
 import { useInitDemo, useActiveVehicles } from '@/hooks/use-store'
 import { useTranslations } from '@/lib/i18n/context'
+import { useSettings } from '@/lib/settings/context'
 
 export default function ValetParkingApp() {
   const [activeTab, setActiveTab] = useState<TabType>('checkin')
@@ -18,6 +19,25 @@ export default function ValetParkingApp() {
   const initDemo = useInitDemo()
   const activeVehicles = useActiveVehicles()
   const t = useTranslations()
+  const { settings } = useSettings()
+
+  // Encontrar la primera pestana activa si la actual esta deshabilitada
+  useEffect(() => {
+    const tabSettings: Record<TabType, boolean> = {
+      checkin: settings.showCheckin,
+      checkout: settings.showCheckout,
+      vehicles: settings.showVehicles,
+      notifications: settings.showAlerts,
+      history: settings.showHistory,
+    }
+
+    if (!tabSettings[activeTab]) {
+      const firstActive = (Object.keys(tabSettings) as TabType[]).find(tab => tabSettings[tab])
+      if (firstActive) {
+        setActiveTab(firstActive)
+      }
+    }
+  }, [settings, activeTab])
 
   useEffect(() => {
     setMounted(true)
@@ -52,19 +72,19 @@ export default function ValetParkingApp() {
               </div>
             </div>
             
-            <div className="flex items-center gap-2">
-              <LanguageSelector />
+            <div className="flex items-center gap-1">
               {activeVehicles.length === 0 && (
                 <Button 
-                  variant="outline" 
+                  variant="ghost" 
                   size="sm" 
                   onClick={initDemo}
-                  className="text-xs gap-1 bg-transparent"
+                  className="text-xs gap-1"
                 >
                   <Database className="h-3 w-3" />
                   Demo
                 </Button>
               )}
+              <SettingsMenu />
             </div>
           </div>
         </div>
@@ -72,11 +92,11 @@ export default function ValetParkingApp() {
 
       {/* Main Content */}
       <main className="max-w-lg mx-auto px-4 py-6">
-        {activeTab === 'checkin' && <CheckinForm />}
-        {activeTab === 'checkout' && <CheckoutForm />}
-        {activeTab === 'vehicles' && <VehiclesList />}
-        {activeTab === 'notifications' && <NotificationsPanel />}
-        {activeTab === 'history' && <VehiclesList showHistory />}
+        {activeTab === 'checkin' && settings.showCheckin && <CheckinForm />}
+        {activeTab === 'checkout' && settings.showCheckout && <CheckoutForm />}
+        {activeTab === 'vehicles' && settings.showVehicles && <VehiclesList />}
+        {activeTab === 'notifications' && settings.showAlerts && <NotificationsPanel />}
+        {activeTab === 'history' && settings.showHistory && <VehiclesList showHistory />}
       </main>
 
       {/* Bottom Navigation */}

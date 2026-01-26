@@ -24,6 +24,7 @@ export interface Vehicle {
   deliveredTime?: Date
   attendantName?: string
   deliveryAttendant?: string
+  wasRegistered?: boolean // true si fue registrado en entrada, false si solo se dio salida
 }
 
 export interface Notification {
