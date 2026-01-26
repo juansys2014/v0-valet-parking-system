@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { useActiveVehicles, useVehicleActions } from '@/hooks/use-store'
 import { VehicleDetails } from '@/components/vehicle-details'
+import { TranslatedNotes } from '@/components/translated-notes'
 import { useTranslations } from '@/lib/i18n/context'
 import type { Vehicle } from '@/lib/types'
 
@@ -140,7 +141,7 @@ export function NotificationsPanel() {
                         {vehicle.notes && (
                           <p className="text-sm text-warning flex items-center gap-1 mt-1">
                             <AlertTriangle className="h-3 w-3" />
-                            {vehicle.notes}
+                            <TranslatedNotes notes={vehicle.notes} />
                           </p>
                         )}
                       </div>

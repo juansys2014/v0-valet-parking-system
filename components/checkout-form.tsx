@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { QrCode, Search, Car, Clock, MapPin, ArrowRight, Bell, AlertCircle, LogOut, CheckCircle2 } from 'lucide-react'
 import { QRScanner } from '@/components/qr-scanner'
+import { TranslatedNotes } from '@/components/translated-notes'
 import { useActiveVehicles, useVehicleActions } from '@/hooks/use-store'
 import { useTranslations, useLanguage } from '@/lib/i18n/context'
 import { useNotificationSound } from '@/hooks/use-notification-sound'
@@ -189,7 +190,9 @@ export function CheckoutForm() {
               {vehicle.notes && (
                 <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-left">
                   <p className="text-sm text-amber-700 font-medium mb-1">{t.vehicle.notes}:</p>
-                  <p className="text-sm text-foreground">{vehicle.notes}</p>
+                  <p className="text-sm text-foreground">
+                    <TranslatedNotes notes={vehicle.notes} />
+                  </p>
                 </div>
               )}
 
@@ -469,7 +472,7 @@ export function CheckoutForm() {
 
                     {vehicle.notes && (
                       <p className="mt-2 text-sm text-warning line-clamp-1 border-t pt-2">
-                        {vehicle.notes}
+                        <TranslatedNotes notes={vehicle.notes} />
                       </p>
                     )}
                   </CardContent>
