@@ -12,6 +12,7 @@ import {
 import { useTranslations } from '@/lib/i18n/context'
 import { markReady, markDelivered, ticketToVehicle } from "@/lib/api/endpoints"
 import type { Vehicle, VehicleStatus } from "@/lib/types"
+import { formatDuration } from "@/lib/utils/time"
 
 interface VehicleDetailsProps {
   vehicle: Vehicle
@@ -56,28 +57,6 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
     })
   }
 
-  const getElapsedTime = (startDate: Date) => {
-    const now = new Date()
-    const diff = now.getTime() - new Date(startDate).getTime()
-    const minutes = Math.floor(diff / 60000)
-    const hours = Math.floor(minutes / 60)
-    
-    if (hours > 0) {
-      return `${hours}h ${minutes % 60}m`
-    }
-    return `${minutes}m`
-  }
-
-  const getElapsedTimeBetween = (startDate: Date, endDate: Date) => {
-    const diff = new Date(endDate).getTime() - new Date(startDate).getTime()
-    const minutes = Math.floor(diff / 60000)
-    const hours = Math.floor(minutes / 60)
-    
-    if (hours > 0) {
-      return `${hours}h ${minutes % 60}m`
-    }
-    return `${minutes}m`
-  }
 
   const handleMarkReady = async () => {
     if (loading) return
@@ -152,14 +131,14 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
                     {t.vehicles.exit}: {formatDate(vehicle.deliveredTime)}
                   </span>
                   <span className="text-muted-foreground">
-                    ({t.vehicles.duration}: {getElapsedTimeBetween(vehicle.checkinTime, vehicle.deliveredTime)})
+                    ({t.vehicles.duration}: {formatDuration(vehicle.checkinTime, vehicle.deliveredTime)})
                   </span>
                 </div>
               )}
 
               {!isDelivered && (
                 <div className="text-sm text-muted-foreground">
-                  {getElapsedTime(vehicle.checkinTime)}
+                  {t.vehicles.duration}: {formatDuration(vehicle.checkinTime, vehicle.deliveredTime)}
                 </div>
               )}
 
@@ -278,7 +257,7 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
             )}
             <div className="flex items-center justify-between text-sm pt-2 border-t border-border">
               <span className="text-muted-foreground">{t.vehicle.duration}</span>
-              <span className="font-bold text-foreground">{getElapsedTime(vehicle.checkinTime)}</span>
+              <span className="font-bold text-foreground">{formatDuration(vehicle.checkinTime, vehicle.deliveredTime)}</span>
             </div>
           </div>
 

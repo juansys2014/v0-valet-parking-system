@@ -10,6 +10,7 @@ import { VehicleDetails } from '@/components/vehicle-details'
 import { useTranslations } from '@/lib/i18n/context'
 import { getActive, getHistory, checkoutRequest, ticketToVehicle } from "@/lib/api/endpoints"
 import type { Vehicle } from "@/lib/types"
+import { formatDuration } from "@/lib/utils/time"
 
 interface VehiclesListProps {
   showHistory?: boolean
@@ -29,17 +30,6 @@ function formatDateTime(date: Date, locale: string) {
     hour: '2-digit',
     minute: '2-digit'
   })
-}
-
-function getDuration(start: Date, end: Date) {
-  const diff = new Date(end).getTime() - new Date(start).getTime()
-  const minutes = Math.floor(diff / 60000)
-  const hours = Math.floor(minutes / 60)
-  
-  if (hours > 0) {
-    return `${hours}h ${minutes % 60}m`
-  }
-  return `${minutes}m`
 }
 
 function getElapsedTime(date: Date) {
@@ -211,7 +201,7 @@ export function VehiclesList({ showHistory = false }: VehiclesListProps) {
                                 <span>{t.vehicles.exit}: {formatDateTime(vehicle.deliveredTime, 'es')}</span>
                               </div>
                               <div className="flex items-center gap-2 text-primary font-medium">
-                                <span className="ml-5">{t.vehicles.duration}: {getDuration(vehicle.checkinTime, vehicle.deliveredTime)}</span>
+                                <span className="ml-5">{t.vehicles.duration}: {formatDuration(vehicle.checkinTime, vehicle.deliveredTime)}</span>
                               </div>
                             </>
                           )}
