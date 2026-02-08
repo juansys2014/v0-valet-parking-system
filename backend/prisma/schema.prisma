@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum TicketStatus {
+  parked
+  requested
+  ready
+  delivered
+}
+
+enum MediaType {
+  photo
+  video
+}
+
+model Ticket {
+  id                     String         @id @default(uuid())
+  ticketCode             String?
+  licensePlate           String
+  parkingSpot            String?
+  notes                  String?
+  checkinAttendantName   String?
+  deliveryAttendantName  String?
+  status                 TicketStatus   @default(parked)
+  checkinTime            DateTime       @default(now())
+  requestedTime          DateTime?
+  readyTime              DateTime?
+  deliveredTime          DateTime?
+  checkoutTime           DateTime?
+  wasRegistered         Boolean        @default(true)
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+
+  mediaItems   MediaItem[]
+  notifications Notification[]
+
+  @@index([ticketCode])
+  @@index([licensePlate])
+  @@index([status])
+  @@index([checkinTime])
+  @@index([deliveredTime])
+}
+
+model MediaItem {
+  id        String    @id @default(uuid())
+  ticketId  String
+  type      MediaType
+  url       String    @db.LongText
+  createdAt DateTime  @default(now())
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+}
+
+model Notification {
+  id          String    @id @default(uuid())
+  ticketId    String?
+  ticketCode  String?
+  licensePlate String?
+  message     String
+  read        Boolean   @default(false)
+  timestamp   DateTime  @default(now())
+
+  ticket Ticket? @relation(fields: [ticketId], references: [id], onDelete: SetNull)
+
+  @@index([read])
+  @@index([timestamp])
+  @@index([ticketCode])
+}
