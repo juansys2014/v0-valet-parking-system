@@ -12,7 +12,7 @@ const path = require('path');
 module.exports = {
   apps: [
     {
-      name: 'backend',
+      name: 'valet-back',
       cwd: path.join(__dirname, 'backend'),
       script: 'dist/server.js',
       interpreter: 'node',
@@ -22,7 +22,7 @@ module.exports = {
       watch: false,
     },
     {
-      name: 'frontend',
+      name: 'valet-front',
       cwd: path.join(__dirname, 'frontend'),
       script: 'node_modules/.bin/next',
       args: ['start', '-p', '3005'],
