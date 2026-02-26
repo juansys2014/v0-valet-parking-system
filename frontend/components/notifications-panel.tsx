@@ -166,7 +166,7 @@ export function NotificationsPanel() {
                           </Badge>
                         </div>
                         <p className="text-xl font-semibold text-foreground">
-                          {vehicle.licensePlate}
+                          {vehicle.licensePlate || "—"}
                         </p>
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                           {vehicle.parkingSpot && (
@@ -247,7 +247,7 @@ export function NotificationsPanel() {
                           </Badge>
                         </div>
                         <p className="text-xl font-semibold text-foreground">
-                          {vehicle.licensePlate}
+                          {vehicle.licensePlate || "—"}
                         </p>
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                           {vehicle.parkingSpot && (

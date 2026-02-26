@@ -6,6 +6,7 @@ import { Analytics } from '@vercel/analytics/next'
 import { COOKIE_LANGUAGE, DEFAULT_LANGUAGE } from "@/lib/config"
 import { I18nProvider } from '@/lib/i18n/context'
 import { SettingsProvider } from '@/lib/settings/context'
+import { ConfigProvider } from '@/lib/config/context'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -47,7 +48,9 @@ export default async function RootLayout({
       <body className={`font-sans antialiased`}>
         <I18nProvider initialLanguage={initialLanguage}>
           <SettingsProvider>
-            {children}
+            <ConfigProvider>
+              {children}
+            </ConfigProvider>
           </SettingsProvider>
         </I18nProvider>
         <Analytics />

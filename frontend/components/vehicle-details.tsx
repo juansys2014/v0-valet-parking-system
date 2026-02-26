@@ -109,7 +109,7 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
                   {status.label}
                 </Badge>
               </div>
-              <p className="text-lg font-semibold text-foreground">{vehicle.licensePlate}</p>
+              <p className="text-lg font-semibold text-foreground">{vehicle.licensePlate || "—"}</p>
               
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
@@ -216,7 +216,7 @@ export function VehicleDetails({ vehicle, onStatusChange, compact = false }: Veh
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground uppercase tracking-wide">{t.vehicle.licensePlate}</p>
-              <p className="text-2xl font-bold text-foreground">{vehicle.licensePlate}</p>
+              <p className="text-2xl font-bold text-foreground">{vehicle.licensePlate || "—"}</p>
             </div>
             {vehicle.parkingSpot && (
               <div className="space-y-1">

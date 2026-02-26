@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import { useNavCounts } from '@/hooks/use-nav-counts'
 import { useTranslations } from '@/lib/i18n/context'
-import { useSettings } from '@/lib/settings/context'
+import { useConfig } from '@/lib/config/context'
 
 export type TabType = 'checkin' | 'checkout' | 'vehicles' | 'notifications' | 'history'
 
@@ -24,9 +24,9 @@ interface NavigationProps {
 export function Navigation({ activeTab, onTabChange }: NavigationProps) {
   const { parkedCount, alertsCount } = useNavCounts()
   const t = useTranslations()
-  const { settings } = useSettings()
+  const { effectiveSettings } = useConfig()
 
-  const allTabs: { id: TabType; label: string; icon: typeof Car; badge?: number; settingKey: keyof typeof settings }[] = [
+  const allTabs: { id: TabType; label: string; icon: typeof Car; badge?: number; settingKey: keyof typeof effectiveSettings }[] = [
     { id: 'checkin', label: t.nav.entry, icon: LogIn, settingKey: 'showCheckin' },
     { id: 'checkout', label: t.nav.exit, icon: LogOut, settingKey: 'showCheckout' },
     { id: 'vehicles', label: t.nav.active, icon: List, badge: parkedCount || undefined, settingKey: 'showVehicles' },
@@ -34,8 +34,7 @@ export function Navigation({ activeTab, onTabChange }: NavigationProps) {
     { id: 'history', label: t.nav.history, icon: Clock, settingKey: 'showHistory' },
   ]
 
-  // Filtrar solo las pestanas habilitadas
-  const tabs = allTabs.filter(tab => settings[tab.settingKey])
+  const tabs = allTabs.filter(tab => effectiveSettings[tab.settingKey])
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-40 safe-area-inset-bottom">

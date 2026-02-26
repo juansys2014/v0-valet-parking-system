@@ -24,7 +24,7 @@ enum MediaType {
 model Ticket {
   id                     String         @id @default(uuid())
   ticketCode             String?
-  licensePlate           String
+  licensePlate           String?
   parkingSpot            String?
   notes                  String?
   checkinAttendantName   String?

@@ -193,7 +193,7 @@ export function CheckoutForm() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t.vehicle.licensePlate}</span>
-                  <span className="font-bold text-lg">{vehicle.licensePlate}</span>
+                  <span className="font-bold text-lg">{vehicle.licensePlate || "—"}</span>
                 </div>
                 {vehicle.parkingSpot && (
                   <div className="flex justify-between">
@@ -342,7 +342,7 @@ export function CheckoutForm() {
                     {confirmedExit.isQuickExit ? t.checkout.quickExitSuccess : t.checkout.requestSent}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    <span className="font-mono font-bold">#{confirmedExit.ticketCode}</span> - {confirmedExit.licensePlate}
+                    <span className="font-mono font-bold">#{confirmedExit.ticketCode}</span> - {confirmedExit.licensePlate || "—"}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
                     {confirmedExit.isQuickExit ? t.checkout.quickExitSuccessDesc : t.checkout.requestSentDesc}
@@ -470,7 +470,7 @@ export function CheckoutForm() {
                           </Badge>
                         </div>
                         <p className="text-xl font-semibold text-foreground">
-                          {vehicle.licensePlate}
+                          {vehicle.licensePlate || "—"}
                         </p>
                       </div>
 

@@ -7,7 +7,7 @@ const mediaItemSchema = z.object({
 
 export const postEntrySchema = z.object({
   ticketCode: z.string().min(1, "ticketCode no puede estar vacío"),
-  licensePlate: z.string().min(1, "licensePlate no puede estar vacío"),
+  licensePlate: z.string().optional(),
   parkingSpot: z.string().optional(),
   attendantName: z.string().optional(),
   notes: z.string().optional(),

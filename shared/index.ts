@@ -25,7 +25,7 @@ export interface MediaItemDTO {
 export interface TicketDTO {
   id: string
   ticketCode: string | null
-  licensePlate: string
+  licensePlate: string | null
   parkingSpot: string | null
   notes: string | null
   checkinAttendantName: string | null

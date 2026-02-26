@@ -9,7 +9,9 @@ function toUpper(s: string | undefined | null): string | null {
 }
 
 export async function createEntry(input: PostEntryInput) {
-  const licensePlate = toUpper(input.licensePlate) ?? input.licensePlate;
+  const licensePlate = input.licensePlate?.trim()
+    ? (toUpper(input.licensePlate) ?? input.licensePlate.trim())
+    : null;
   const parkingSpot = toUpper(input.parkingSpot) ?? null;
   const ticketCode = input.ticketCode.trim() || null;
 

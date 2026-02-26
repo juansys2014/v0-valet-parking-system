@@ -4,7 +4,7 @@ import { prisma } from "../db/prisma";
 export const ticketRepository = {
   async create(data: {
     ticketCode: string | null;
-    licensePlate: string;
+    licensePlate: string | null;
     parkingSpot: string | null;
     notes: string | null;
     checkinAttendantName: string | null;

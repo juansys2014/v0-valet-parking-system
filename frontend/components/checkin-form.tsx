@@ -37,13 +37,13 @@ export function CheckinForm({ onSuccess }: CheckinFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!ticketCode?.trim() || !licensePlate?.trim()) return
+    if (!ticketCode?.trim()) return
 
     setIsSubmitting(true)
     try {
-      const res = await entryCreate({
+      await entryCreate({
         ticketCode: ticketCode.trim(),
-        licensePlate: licensePlate.toUpperCase().trim(),
+        licensePlate: licensePlate?.trim() ? licensePlate.toUpperCase().trim() : undefined,
         parkingSpot: parkingSpot.trim() || undefined,
         attendantName: attendantName.trim() || undefined,
         notes: notes.trim() || undefined,
@@ -77,7 +77,7 @@ export function CheckinForm({ onSuccess }: CheckinFormProps) {
             </div>
             <h3 className="text-xl font-semibold text-foreground mb-2">{t.checkin.vehicleRegistered}</h3>
             <p className="text-muted-foreground">
-              {t.vehicle.ticket} #{ticketCode} - {licensePlate}
+              {t.vehicle.ticket} #{ticketCode}{licensePlate?.trim() ? ` - ${licensePlate}` : ""}
             </p>
           </div>
         </CardContent>
@@ -131,7 +131,7 @@ export function CheckinForm({ onSuccess }: CheckinFormProps) {
 
             {/* License Plate */}
             <div className="space-y-2">
-              <Label htmlFor="licensePlate">{t.checkin.licensePlate} *</Label>
+              <Label htmlFor="licensePlate">{t.checkin.licensePlate}</Label>
               <Input
                 id="licensePlate"
                 value={licensePlate}
@@ -189,7 +189,7 @@ export function CheckinForm({ onSuccess }: CheckinFormProps) {
               type="submit" 
               className="w-full" 
               size="lg"
-              disabled={isSubmitting || !ticketCode || !licensePlate}
+              disabled={isSubmitting || !ticketCode?.trim()}
             >
               {isSubmitting ? t.common.loading : t.checkin.registerEntry}
             </Button>

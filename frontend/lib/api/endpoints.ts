@@ -27,7 +27,7 @@ export function ticketToVehicle(t: TicketDTO): Vehicle {
   return {
     id: t.id,
     ticketCode: t.ticketCode ?? "",
-    licensePlate: t.licensePlate,
+    licensePlate: t.licensePlate ?? "",
     photos,
     videos,
     media,
@@ -48,7 +48,7 @@ export function ticketToVehicle(t: TicketDTO): Vehicle {
 
 export interface EntryPayload {
   ticketCode: string
-  licensePlate: string
+  licensePlate?: string
   parkingSpot?: string
   attendantName?: string
   notes?: string
@@ -107,7 +107,7 @@ export interface AlertsResponse {
 export async function entryCreate(payload: EntryPayload): Promise<EntryResponse> {
   const body = {
     ticketCode: payload.ticketCode.trim(),
-    licensePlate: payload.licensePlate.toUpperCase().trim(),
+    licensePlate: payload.licensePlate?.trim() ? payload.licensePlate.toUpperCase().trim() : undefined,
     parkingSpot: payload.parkingSpot?.toUpperCase().trim(),
     attendantName: payload.attendantName?.trim(),
     notes: payload.notes?.trim(),
