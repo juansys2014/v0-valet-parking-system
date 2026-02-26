@@ -14,11 +14,11 @@ export const ticketRepository = {
   }) {
     return prisma.ticket.create({
       data: {
-        ticketCode: data.ticketCode,
-        licensePlate: data.licensePlate,
-        parkingSpot: data.parkingSpot,
-        notes: data.notes,
-        checkinAttendantName: data.checkinAttendantName,
+        ticketCode: data.ticketCode ?? undefined,
+        licensePlate: data.licensePlate ?? undefined,
+        parkingSpot: data.parkingSpot ?? undefined,
+        notes: data.notes ?? undefined,
+        checkinAttendantName: data.checkinAttendantName ?? undefined,
         status: data.status ?? "parked",
         wasRegistered: data.wasRegistered ?? true,
         requestedTime: data.requestedTime ?? undefined,
