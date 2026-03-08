@@ -9,7 +9,7 @@ function hashPassword(plain) {
 async function main() {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("DATABASE_URL is not set");
-  const prisma = new PrismaClient({ datasources: { db: { url } } });
+  const prisma = new PrismaClient({ datasourceUrl: url });
   const count = await prisma.appUser.count();
   if (count > 0) return;
   await prisma.appUser.create({
