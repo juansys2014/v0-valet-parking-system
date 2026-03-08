@@ -120,21 +120,37 @@ export function SettingsMenu() {
 
           <Card className="relative z-10 w-full max-w-sm mx-4 mt-16 max-h-[85vh] flex flex-col shadow-xl animate-in fade-in slide-in-from-top-4 duration-200">
             <CardHeader className="pb-2 flex-shrink-0">
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Menu className="h-5 w-5" />
-                  {configSection === "users" && isAdmin ? t.config.users : t.settings.title}
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle className="flex items-center gap-2 text-lg min-w-0">
+                  <Menu className="h-5 w-5 flex-shrink-0" />
+                  <span className="truncate">{configSection === "users" && isAdmin ? t.config.users : t.settings.title}</span>
                 </CardTitle>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => {
-                    setOpen(false)
-                    setConfigSection("main")
-                  }}
-                >
-                  <X className="h-5 w-5" />
-                </Button>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-1.5 h-9 text-xs"
+                    onClick={() => {
+                      setCurrentUser(null)
+                      setOpen(false)
+                      setConfigSection("main")
+                    }}
+                  >
+                    <SwitchUserIcon className="h-3.5 w-3.5" />
+                    {t.auth.logout}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9"
+                    onClick={() => {
+                      setOpen(false)
+                      setConfigSection("main")
+                    }}
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
+                </div>
               </div>
             </CardHeader>
 

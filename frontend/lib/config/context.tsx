@@ -107,7 +107,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false
-    const TIMEOUT_MS = 10000
+    const TIMEOUT_MS = 6000
 
     async function load() {
       try {
