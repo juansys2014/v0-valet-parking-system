@@ -7,7 +7,6 @@ import { I18nProvider } from '@/lib/i18n/context'
 import { SettingsProvider } from '@/lib/settings/context'
 import { ConfigProvider } from '@/lib/config/context'
 import { DynamicIcon } from '@/components/dynamic-icon'
-import { PwaRegister } from '@/components/pwa-register'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -71,7 +70,6 @@ export default async function RootLayout({
         <I18nProvider initialLanguage={initialLanguage}>
           <SettingsProvider>
             <ConfigProvider>
-              <PwaRegister />
               <DynamicIcon />
               {children}
             </ConfigProvider>
