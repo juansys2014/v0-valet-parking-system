@@ -66,12 +66,7 @@ export function SettingsMenu() {
   } = useConfig()
   const [qrModal, setQrModal] = useState<{ dataUrl: string; userName: string } | null>(null)
   const [editingUserId, setEditingUserId] = useState<string | null>(null)
-  const [companyNameInput, setCompanyNameInput] = useState("")
-
-  // Sincronizar input local con config al abrir o al cambiar config
-  useEffect(() => {
-    setCompanyNameInput(config?.companyName ?? "")
-  }, [config?.companyName, open])
+  const companyNameInputRef = useRef<HTMLInputElement>(null)
 
   // Evitar overlays quedados abiertos (p. ej. por caché o navegación)
   useEffect(() => {
@@ -139,17 +134,6 @@ export function SettingsMenu() {
             tabIndex={0}
             aria-label="Cerrar"
           />
-          <button
-            type="button"
-            className="fixed top-4 right-4 z-[60] rounded-full bg-primary text-primary-foreground p-2 shadow-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring"
-            onClick={() => {
-              setOpen(false)
-              setConfigSection("main")
-            }}
-            aria-label="Cerrar menú"
-          >
-            <X className="h-6 w-6" />
-          </button>
 
           <Card className="relative z-10 w-full max-w-sm mx-4 mt-16 max-h-[85vh] flex flex-col shadow-xl animate-in fade-in slide-in-from-top-4 duration-200">
             <CardHeader className="pb-2 flex-shrink-0">
@@ -158,32 +142,18 @@ export function SettingsMenu() {
                   <Menu className="h-5 w-5 flex-shrink-0" />
                   <span className="truncate">{configSection === "users" && isAdmin ? t.config.users : t.settings.title}</span>
                 </CardTitle>
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="gap-1.5 h-9 text-xs"
-                    onClick={() => {
-                      setCurrentUser(null)
-                      setOpen(false)
-                      setConfigSection("main")
-                    }}
-                  >
-                    <SwitchUserIcon className="h-3.5 w-3.5" />
-                    {t.auth.logout}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-9 w-9"
-                    onClick={() => {
-                      setOpen(false)
-                      setConfigSection("main")
-                    }}
-                  >
-                    <X className="h-5 w-5" />
-                  </Button>
-                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 flex-shrink-0"
+                  onClick={() => {
+                    setOpen(false)
+                    setConfigSection("main")
+                  }}
+                  aria-label="Cerrar"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
               </div>
             </CardHeader>
 
@@ -246,10 +216,13 @@ export function SettingsMenu() {
                               {t.config.companyName}
                             </Label>
                             <Input
-                              value={companyNameInput}
-                              onChange={(e) => setCompanyNameInput(e.target.value)}
+                              ref={companyNameInputRef}
+                              key={config?.companyName ?? "default"}
+                              defaultValue={config?.companyName ?? ""}
                               onBlur={() => {
-                                const v = companyNameInput.trim()
+                                const el = companyNameInputRef.current
+                                if (!el) return
+                                const v = el.value.trim()
                                 setCompanyName(v || "Valet Parking")
                               }}
                               placeholder={t.config.companyNamePlaceholder}
@@ -341,6 +314,19 @@ export function SettingsMenu() {
                       </div>
 
                       <Separator />
+
+                      <Button
+                        variant="outline"
+                        className="w-full h-11 gap-2"
+                        onClick={() => {
+                          setCurrentUser(null)
+                          setOpen(false)
+                          setConfigSection("main")
+                        }}
+                      >
+                        <SwitchUserIcon className="h-4 w-4" />
+                        {t.auth.logout}
+                      </Button>
                     </>
                   )}
                 </>
