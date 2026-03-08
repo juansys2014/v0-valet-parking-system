@@ -1,5 +1,6 @@
 import { Response } from "express";
 import { Router } from "express";
+import sharp from "sharp";
 import { settingsRepository } from "../repositories/settings.repository";
 import { userRepository } from "../repositories/user.repository";
 import { hashPassword, generateToken } from "../utils/auth";
@@ -61,7 +62,9 @@ router.get("/manifest", async (req, res: Response) => {
   }
 });
 
-/** GET /api/config/logo — público; devuelve la imagen del logo de la empresa (para PWA / icono instalable). Sin logo → redirige al icono por defecto */
+/** GET /api/config/logo — público; devuelve el logo redimensionado a 512x512 PNG para icono PWA (Chrome/móvil exige tamaño y formato). Sin logo → redirige al icono por defecto */
+const ICON_SIZE = 512;
+
 router.get("/logo", async (_req, res: Response) => {
   try {
     const row = await settingsRepository.get();
@@ -75,15 +78,18 @@ router.get("/logo", async (_req, res: Response) => {
       res.redirect(302, "/icon.svg");
       return;
     }
-    const mime = match[1];
     const base64 = match[2].replace(/\s/g, "");
     const buf = Buffer.from(base64, "base64");
+    const png = await sharp(buf)
+      .resize(ICON_SIZE, ICON_SIZE, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+      .png()
+      .toBuffer();
     res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
-    res.setHeader("Content-Type", mime);
-    res.send(buf);
+    res.setHeader("Content-Type", "image/png");
+    res.send(png);
   } catch (e) {
     console.error("GET /api/config/logo", e);
-    res.status(500).end();
+    res.redirect(302, "/icon.svg");
   }
 });
 
