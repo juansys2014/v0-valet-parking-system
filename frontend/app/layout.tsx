@@ -1,6 +1,6 @@
 import React from "react"
 import type { Metadata } from 'next'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { COOKIE_LANGUAGE, DEFAULT_LANGUAGE } from "@/lib/config"
 import { I18nProvider } from '@/lib/i18n/context'
@@ -30,13 +30,20 @@ const defaultMetadata: Metadata = {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"
+  const h = await headers()
+  const host = h.get("host") ?? ""
+  const proto = h.get("x-forwarded-proto") ?? (host.includes("localhost") ? "http" : "https")
+  const base = host ? `${proto}://${host}` : (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000")
   let logoDataUrl: string | null = null
   try {
-    const res = await fetch(`${base}/api/config/settings`, { cache: "no-store" })
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 5000)
+    const res = await fetch(`${base}/api/config/settings`, { cache: "no-store", signal: controller.signal })
+    clearTimeout(timeout)
     const data = await res.json()
     if (data?.logo && typeof data.logo === "string" && data.logo.startsWith("data:image/")) {
-      logoDataUrl = data.logo
+      const maxLen = 200000
+      logoDataUrl = data.logo.length <= maxLen ? data.logo : null
     }
   } catch {
     // ignore
@@ -45,7 +52,7 @@ export async function generateMetadata(): Promise<Metadata> {
     ...defaultMetadata,
     icons: logoDataUrl
       ? { icon: [{ url: logoDataUrl, type: "image/png", sizes: "512x512" }], apple: logoDataUrl }
-      : { icon: [{ url: "/api/config/logo", type: "image/png", sizes: "512x512" }], apple: "/api/config/logo" },
+      : { icon: [{ url: `${base}/api/config/logo`, type: "image/png", sizes: "512x512" }], apple: `${base}/api/config/logo` },
   }
 }
 
