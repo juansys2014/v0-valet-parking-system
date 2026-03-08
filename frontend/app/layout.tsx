@@ -12,7 +12,7 @@ import './globals.css'
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
+const defaultMetadata: Metadata = {
   title: 'Valet Parking Control',
   description: 'Valet parking control system - Vehicle registration, photos, and delivery management',
   generator: 'v0.app',
@@ -22,15 +22,31 @@ export const metadata: Metadata = {
     statusBarStyle: 'default',
     title: 'Valet Parking',
   },
-  icons: {
-    icon: [{ url: '/api/config/logo', type: 'image/png', sizes: '512x512' }],
-    apple: '/api/config/logo',
-  },
   other: {
     'mobile-web-app-capable': 'yes',
     'apple-mobile-web-app-capable': 'yes',
     'apple-mobile-web-app-status-bar-style': 'default',
   },
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const base = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"
+  let logoDataUrl: string | null = null
+  try {
+    const res = await fetch(`${base}/api/config/settings`, { cache: "no-store" })
+    const data = await res.json()
+    if (data?.logo && typeof data.logo === "string" && data.logo.startsWith("data:image/")) {
+      logoDataUrl = data.logo
+    }
+  } catch {
+    // ignore
+  }
+  return {
+    ...defaultMetadata,
+    icons: logoDataUrl
+      ? { icon: [{ url: logoDataUrl, type: "image/png", sizes: "512x512" }], apple: logoDataUrl }
+      : { icon: [{ url: "/api/config/logo", type: "image/png", sizes: "512x512" }], apple: "/api/config/logo" },
+  }
 }
 
 export default async function RootLayout({
