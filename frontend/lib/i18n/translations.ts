@@ -178,6 +178,8 @@ const es = {
     setPassword: "Establecer contraseña",
     generateQR: "Generar QR de acceso",
     qrHelp: "Escanear con el teléfono para entrar sin contraseña",
+    fieldVisibilityTitle: "Campos visibles en registro",
+    fieldVisibilityHelp: "Activa o desactiva los campos que la empresa quiere ver en el formulario de entrada. El número de ticket es obligatorio.",
   },
   auth: {
     login: "Iniciar sesión",
@@ -376,6 +378,8 @@ const en: TranslationKeys = {
     setPassword: "Set password",
     generateQR: "Generate access QR",
     qrHelp: "Scan with phone to enter without password",
+    fieldVisibilityTitle: "Visible fields in entry form",
+    fieldVisibilityHelp: "Toggle which fields the company wants to show in the entry form. Ticket number is always required.",
   },
   auth: {
     login: "Log in",

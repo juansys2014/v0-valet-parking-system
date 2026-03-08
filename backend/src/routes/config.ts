@@ -24,13 +24,18 @@ function toPublicUser(user: { id: string; name: string; isAdmin: boolean; showCh
   };
 }
 
-/** GET /api/config/settings — público (logo, companyName) */
+/** GET /api/config/settings — público (logo, companyName, campos visibles) */
 router.get("/settings", async (_req, res: Response) => {
   try {
     const row = await settingsRepository.get();
     json(res, {
       companyName: row?.companyName ?? "Valet Parking",
       logo: row?.logo ?? null,
+      showLicensePlate: row?.showLicensePlate ?? true,
+      showParkingSpot: row?.showParkingSpot ?? true,
+      showAttendantName: row?.showAttendantName ?? true,
+      showMedia: row?.showMedia ?? true,
+      showNotes: row?.showNotes ?? true,
     });
   } catch (e) {
     console.error("GET /api/config/settings", e);
@@ -38,18 +43,36 @@ router.get("/settings", async (_req, res: Response) => {
   }
 });
 
-/** PUT /api/config/settings — admin: actualizar companyName y/o logo */
+/** PUT /api/config/settings — admin: actualizar companyName, logo y/o campos visibles */
 router.put("/settings", requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
-    const { companyName, logo } = req.body as { companyName?: string; logo?: string | null };
+    const body = req.body as {
+      companyName?: string;
+      logo?: string | null;
+      showLicensePlate?: boolean;
+      showParkingSpot?: boolean;
+      showAttendantName?: boolean;
+      showMedia?: boolean;
+      showNotes?: boolean;
+    };
     await settingsRepository.update({
-      ...(typeof companyName === "string" && { companyName: companyName.trim() }),
-      ...(logo !== undefined && { logo: logo === null || logo === "" ? null : String(logo) }),
+      ...(typeof body.companyName === "string" && { companyName: body.companyName.trim() }),
+      ...(body.logo !== undefined && { logo: body.logo === null || body.logo === "" ? null : String(body.logo) }),
+      ...(typeof body.showLicensePlate === "boolean" && { showLicensePlate: body.showLicensePlate }),
+      ...(typeof body.showParkingSpot === "boolean" && { showParkingSpot: body.showParkingSpot }),
+      ...(typeof body.showAttendantName === "boolean" && { showAttendantName: body.showAttendantName }),
+      ...(typeof body.showMedia === "boolean" && { showMedia: body.showMedia }),
+      ...(typeof body.showNotes === "boolean" && { showNotes: body.showNotes }),
     });
     const row = await settingsRepository.get();
     json(res, {
       companyName: row?.companyName ?? "Valet Parking",
       logo: row?.logo ?? null,
+      showLicensePlate: row?.showLicensePlate ?? true,
+      showParkingSpot: row?.showParkingSpot ?? true,
+      showAttendantName: row?.showAttendantName ?? true,
+      showMedia: row?.showMedia ?? true,
+      showNotes: row?.showNotes ?? true,
     });
   } catch (e) {
     console.error("PUT /api/config/settings", e);

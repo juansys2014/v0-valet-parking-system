@@ -78,10 +78,15 @@ model Notification {
 }
 
 model AppSettings {
-  id          String   @id @default("default")
-  companyName String   @default("Valet Parking")
-  logo        String?  @db.LongText
-  updatedAt   DateTime @updatedAt
+  id                 String   @id @default("default")
+  companyName        String   @default("Valet Parking")
+  logo               String?  @db.LongText
+  showLicensePlate   Boolean  @default(true)
+  showParkingSpot    Boolean  @default(true)
+  showAttendantName  Boolean  @default(true)
+  showMedia          Boolean  @default(true)
+  showNotes          Boolean  @default(true)
+  updatedAt          DateTime @updatedAt
 }
 
 model AppUser {

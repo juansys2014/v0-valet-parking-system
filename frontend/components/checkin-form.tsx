@@ -10,6 +10,7 @@ import { QrCode, Car, Check, ParkingSquare, User } from 'lucide-react'
 import { MediaCapture } from '@/components/media-capture'
 import { QRScanner } from '@/components/qr-scanner'
 import { useTranslations } from '@/lib/i18n/context'
+import { useConfig } from '@/lib/config/context'
 import { entryCreate } from "@/lib/api/endpoints"
 import type { MediaItem } from "@/lib/types"
 
@@ -29,6 +30,8 @@ export function CheckinForm({ onSuccess }: CheckinFormProps) {
   const [success, setSuccess] = useState(false)
 
   const t = useTranslations()
+  const { config } = useConfig()
+  const fv = config?.fieldVisibility
 
   const handleQRScan = (code: string) => {
     setTicketCode(code)
@@ -129,60 +132,72 @@ export function CheckinForm({ onSuccess }: CheckinFormProps) {
               </div>
             </div>
 
-            {/* License Plate */}
-            <div className="space-y-2">
-              <Label htmlFor="licensePlate">{t.checkin.licensePlate}</Label>
-              <Input
-                id="licensePlate"
-                value={licensePlate}
-                onChange={(e) => setLicensePlate(e.target.value.toUpperCase())}
-                placeholder={t.checkin.licensePlaceholder}
-                className="text-lg uppercase"
-              />
-            </div>
-
-            {/* Parking Spot */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* License Plate — visible según configuración */}
+            {(fv?.showLicensePlate ?? true) && (
               <div className="space-y-2">
-                <Label htmlFor="parkingSpot">
-                  <ParkingSquare className="h-4 w-4 inline mr-1" />
-                  {t.checkin.parkingSpot}
-                </Label>
+                <Label htmlFor="licensePlate">{t.checkin.licensePlate}</Label>
                 <Input
-                  id="parkingSpot"
-                  value={parkingSpot}
-                  onChange={(e) => setParkingSpot(e.target.value.toUpperCase())}
-                  placeholder={t.checkin.parkingPlaceholder}
+                  id="licensePlate"
+                  value={licensePlate}
+                  onChange={(e) => setLicensePlate(e.target.value.toUpperCase())}
+                  placeholder={t.checkin.licensePlaceholder}
+                  className="text-lg uppercase"
                 />
               </div>
+            )}
+
+            {/* Parking Spot y Encargado — visibles según configuración */}
+            {(fv?.showParkingSpot ?? true) || (fv?.showAttendantName ?? true) ? (
+              <div className="grid grid-cols-2 gap-4">
+                {(fv?.showParkingSpot ?? true) && (
+                  <div className="space-y-2">
+                    <Label htmlFor="parkingSpot">
+                      <ParkingSquare className="h-4 w-4 inline mr-1" />
+                      {t.checkin.parkingSpot}
+                    </Label>
+                    <Input
+                      id="parkingSpot"
+                      value={parkingSpot}
+                      onChange={(e) => setParkingSpot(e.target.value.toUpperCase())}
+                      placeholder={t.checkin.parkingPlaceholder}
+                    />
+                  </div>
+                )}
+                {(fv?.showAttendantName ?? true) && (
+                  <div className="space-y-2">
+                    <Label htmlFor="attendant">
+                      <User className="h-4 w-4 inline mr-1" />
+                      {t.checkin.attendantName}
+                    </Label>
+                    <Input
+                      id="attendant"
+                      value={attendantName}
+                      onChange={(e) => setAttendantName(e.target.value)}
+                      placeholder={t.checkin.attendantPlaceholder}
+                    />
+                  </div>
+                )}
+              </div>
+            ) : null}
+
+            {/* Media (Photos & Videos) — visible según configuración */}
+            {(fv?.showMedia ?? true) && (
+              <MediaCapture media={media} onMediaChange={setMedia} />
+            )}
+
+            {/* Notes — visible según configuración */}
+            {(fv?.showNotes ?? true) && (
               <div className="space-y-2">
-                <Label htmlFor="attendant">
-                  <User className="h-4 w-4 inline mr-1" />
-                  {t.checkin.attendantName}
-                </Label>
-                <Input
-                  id="attendant"
-                  value={attendantName}
-                  onChange={(e) => setAttendantName(e.target.value)}
-                  placeholder={t.checkin.attendantPlaceholder}
+                <Label htmlFor="notes">{t.checkin.notes}</Label>
+                <Textarea
+                  id="notes"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder={t.checkin.notesPlaceholder}
+                  rows={3}
                 />
               </div>
-            </div>
-
-            {/* Media (Photos & Videos) */}
-            <MediaCapture media={media} onMediaChange={setMedia} />
-
-            {/* Notes */}
-            <div className="space-y-2">
-              <Label htmlFor="notes">{t.checkin.notes}</Label>
-              <Textarea
-                id="notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder={t.checkin.notesPlaceholder}
-                rows={3}
-              />
-            </div>
+            )}
 
             {/* Submit */}
             <Button 

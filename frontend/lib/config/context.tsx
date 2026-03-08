@@ -10,7 +10,15 @@ import {
   type ReactNode,
 } from "react"
 import { LS_CURRENT_USER, LS_TOKEN } from "@/lib/config"
-import { configApi, type PublicUser } from "@/lib/api/config"
+import { configApi, type PublicUser, type FieldVisibility } from "@/lib/api/config"
+
+const defaultFieldVisibility: FieldVisibility = {
+  showLicensePlate: true,
+  showParkingSpot: true,
+  showAttendantName: true,
+  showMedia: true,
+  showNotes: true,
+}
 
 export interface AppSettings {
   showCheckin: boolean
@@ -26,6 +34,7 @@ export interface AppConfig {
   companyName: string
   logo: string | null
   users: UserConfig[]
+  fieldVisibility: FieldVisibility
 }
 
 const defaultSettings: AppSettings = {
@@ -49,6 +58,7 @@ interface ConfigContextType {
   loading: boolean
   setCompanyName: (name: string) => void
   setLogo: (dataUrl: string | null) => void
+  setFieldVisibility: (key: keyof FieldVisibility, value: boolean) => void
   setCurrentUser: (userId: string | null) => void
   setAuth: (token: string, user: PublicUser) => void
   addUser: (user: Omit<UserConfig, "id"> & { password?: string }) => void
@@ -63,6 +73,7 @@ const ConfigContext = createContext<ConfigContextType | null>(null)
 export function ConfigProvider({ children }: { children: ReactNode }) {
   const [companyName, setCompanyNameState] = useState(DEFAULT_COMPANY_NAME)
   const [logo, setLogoState] = useState<string | null>(null)
+  const [fieldVisibility, setFieldVisibilityState] = useState<FieldVisibility>(defaultFieldVisibility)
   const [users, setUsersState] = useState<UserConfig[]>([])
   const [currentUserId, setCurrentUserIdState] = useState<string | null>(() =>
     typeof window !== "undefined" ? window.localStorage.getItem(LS_CURRENT_USER) : null
@@ -71,8 +82,8 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   const config: AppConfig = useMemo(
-    () => ({ companyName, logo, users }),
-    [companyName, logo, users]
+    () => ({ companyName, logo, users, fieldVisibility }),
+    [companyName, logo, users, fieldVisibility]
   )
 
   const currentUser = useMemo(
@@ -119,11 +130,19 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
         if (!cancelled && settings) {
           setCompanyNameState(settings.companyName || DEFAULT_COMPANY_NAME)
           setLogoState(settings.logo ?? null)
+          setFieldVisibilityState({
+            showLicensePlate: settings.showLicensePlate ?? true,
+            showParkingSpot: settings.showParkingSpot ?? true,
+            showAttendantName: settings.showAttendantName ?? true,
+            showMedia: settings.showMedia ?? true,
+            showNotes: settings.showNotes ?? true,
+          })
         }
       } catch {
         if (!cancelled) {
           setCompanyNameState(DEFAULT_COMPANY_NAME)
           setLogoState(null)
+          setFieldVisibilityState(defaultFieldVisibility)
         }
       }
 
@@ -203,6 +222,15 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       setLogoState(dataUrl)
     } catch (e) {
       console.error("setLogo", e)
+    }
+  }, [])
+
+  const setFieldVisibility = useCallback(async (key: keyof FieldVisibility, value: boolean) => {
+    try {
+      await configApi.updateSettings({ [key]: value })
+      setFieldVisibilityState((prev) => ({ ...prev, [key]: value }))
+    } catch (e) {
+      console.error("setFieldVisibility", e)
     }
   }, [])
 
@@ -294,6 +322,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       loading,
       setCompanyName,
       setLogo,
+      setFieldVisibility,
       setCurrentUser,
       setAuth,
       addUser,
@@ -311,6 +340,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       loading,
       setCompanyName,
       setLogo,
+      setFieldVisibility,
       setCurrentUser,
       setAuth,
       addUser,

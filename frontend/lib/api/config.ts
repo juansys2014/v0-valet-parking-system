@@ -39,12 +39,38 @@ async function fetchApi<T>(
   return data as T
 }
 
+export interface FieldVisibility {
+  showLicensePlate: boolean
+  showParkingSpot: boolean
+  showAttendantName: boolean
+  showMedia: boolean
+  showNotes: boolean
+}
+
+export interface SettingsResponse {
+  companyName: string
+  logo: string | null
+  showLicensePlate?: boolean
+  showParkingSpot?: boolean
+  showAttendantName?: boolean
+  showMedia?: boolean
+  showNotes?: boolean
+}
+
 export const configApi = {
-  async getSettings(): Promise<{ companyName: string; logo: string | null }> {
+  async getSettings(): Promise<SettingsResponse> {
     return fetchApi("/config/settings", { skipAuth: true })
   },
 
-  async updateSettings(body: { companyName?: string; logo?: string | null }): Promise<{ companyName: string; logo: string | null }> {
+  async updateSettings(body: {
+    companyName?: string
+    logo?: string | null
+    showLicensePlate?: boolean
+    showParkingSpot?: boolean
+    showAttendantName?: boolean
+    showMedia?: boolean
+    showNotes?: boolean
+  }): Promise<SettingsResponse> {
     return fetchApi("/config/settings", { method: "PUT", body: JSON.stringify(body) })
   },
 

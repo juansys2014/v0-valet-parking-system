@@ -58,6 +58,7 @@ export function SettingsMenu() {
     isAdmin,
     setCompanyName,
     setLogo,
+    setFieldVisibility,
     setCurrentUser,
     addUser,
     updateUser,
@@ -254,6 +255,36 @@ export function SettingsMenu() {
                               />
                             </div>
                           )}
+
+                          <Separator />
+
+                          <div className="space-y-3">
+                            <Label className="text-sm font-medium">
+                              {t.config.fieldVisibilityTitle}
+                            </Label>
+                            <p className="text-xs text-muted-foreground">
+                              {t.config.fieldVisibilityHelp}
+                            </p>
+                            <div className="space-y-2">
+                              {(
+                                [
+                                  { key: "showLicensePlate" as const, label: t.checkin.licensePlate },
+                                  { key: "showParkingSpot" as const, label: t.checkin.parkingSpot },
+                                  { key: "showAttendantName" as const, label: t.checkin.attendantName },
+                                  { key: "showMedia" as const, label: t.checkin.mediaSection },
+                                  { key: "showNotes" as const, label: t.checkin.notes },
+                                ] as const
+                              ).map(({ key, label }) => (
+                                <div key={key} className="flex items-center justify-between gap-2">
+                                  <Label className="text-sm font-normal">{label}</Label>
+                                  <Switch
+                                    checked={config?.fieldVisibility?.[key] ?? true}
+                                    onCheckedChange={(checked) => setFieldVisibility(key, checked)}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
 
                           <Separator />
 
