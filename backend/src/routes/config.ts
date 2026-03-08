@@ -24,6 +24,37 @@ function toPublicUser(user: { id: string; name: string; isAdmin: boolean; showCh
   };
 }
 
+/** GET /api/config/manifest — público; manifest PWA dinámico con URL del logo con ?v= para que el móvil no use icono cacheado */
+router.get("/manifest", async (_req, res: Response) => {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+  res.setHeader("Content-Type", "application/manifest+json");
+  try {
+    const row = await settingsRepository.get();
+    const name = row?.companyName ?? "Valet Parking";
+    const v = row?.updatedAt ? new Date(row.updatedAt).getTime() : Date.now();
+    const logoUrl = `/api/config/logo?v=${v}`;
+    const manifest = {
+      name: name,
+      short_name: name.length > 20 ? name.slice(0, 17) + "…" : name,
+      description: "Sistema de control de valet parking - registro de vehículos y entrega",
+      start_url: "/",
+      display: "standalone",
+      background_color: "#0a0a0a",
+      theme_color: "#0a0a0a",
+      orientation: "portrait-primary" as const,
+      icons: [
+        { src: logoUrl, sizes: "512x512", type: "image/png", purpose: "any" },
+        { src: logoUrl, sizes: "192x192", type: "image/png", purpose: "any" },
+        { src: "/icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
+      ],
+    };
+    res.send(manifest);
+  } catch (e) {
+    console.error("GET /api/config/manifest", e);
+    res.status(500).send({ name: "Valet Parking", short_name: "Valet Parking", start_url: "/", display: "standalone", icons: [] });
+  }
+});
+
 /** GET /api/config/logo — público; devuelve la imagen del logo de la empresa (para PWA / icono instalable). Sin logo → redirige al icono por defecto */
 router.get("/logo", async (_req, res: Response) => {
   try {
@@ -41,7 +72,7 @@ router.get("/logo", async (_req, res: Response) => {
     const mime = match[1];
     const base64 = match[2].replace(/\s/g, "");
     const buf = Buffer.from(base64, "base64");
-    res.setHeader("Cache-Control", "public, max-age=86400");
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
     res.setHeader("Content-Type", mime);
     res.send(buf);
   } catch (e) {
