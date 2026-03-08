@@ -66,6 +66,9 @@ export default async function RootLayout({
   const initialLanguage = raw === "en" ? "en" : DEFAULT_LANGUAGE
   return (
     <html lang={initialLanguage}>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+      </head>
       <body className={`font-sans antialiased`}>
         <I18nProvider initialLanguage={initialLanguage}>
           <SettingsProvider>
