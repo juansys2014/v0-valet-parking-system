@@ -6,11 +6,18 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
- 
   devIndicators: {
     appIsrStatus: false,
     buildActivity: false,
     buildActivityPosition: 'bottom-right',
+  },
+  async headers() {
+    return [
+      {
+        source: '/manifest.json',
+        headers: [{ key: 'Content-Type', value: 'application/manifest+json' }],
+      },
+    ]
   },
   async rewrites() {
     return [

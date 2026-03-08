@@ -4,9 +4,11 @@
   "description": "Sistema de control de valet parking - registro de vehículos y entrega",
   "start_url": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui", "browser"],
   "background_color": "#0a0a0a",
   "theme_color": "#0a0a0a",
   "orientation": "portrait-primary",
+  "scope": "/",
   "icons": [
     {
       "src": "/api/config/logo",
