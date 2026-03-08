@@ -66,6 +66,19 @@ export function SettingsMenu() {
   } = useConfig()
   const [qrModal, setQrModal] = useState<{ dataUrl: string; userName: string } | null>(null)
   const [editingUserId, setEditingUserId] = useState<string | null>(null)
+  const [companyNameInput, setCompanyNameInput] = useState("")
+
+  // Sincronizar input local con config al abrir o al cambiar config
+  useEffect(() => {
+    setCompanyNameInput(config?.companyName ?? "")
+  }, [config?.companyName, open])
+
+  // Evitar overlays quedados abiertos (p. ej. por caché o navegación)
+  useEffect(() => {
+    setOpen(false)
+    setEditingUserId(null)
+    setQrModal(null)
+  }, [])
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -233,8 +246,12 @@ export function SettingsMenu() {
                               {t.config.companyName}
                             </Label>
                             <Input
-                              value={config?.companyName ?? ""}
-                              onChange={(e) => setCompanyName(e.target.value)}
+                              value={companyNameInput}
+                              onChange={(e) => setCompanyNameInput(e.target.value)}
+                              onBlur={() => {
+                                const v = companyNameInput.trim()
+                                setCompanyName(v || "Valet Parking")
+                              }}
                               placeholder={t.config.companyNamePlaceholder}
                               className="h-9"
                             />
