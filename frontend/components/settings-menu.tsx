@@ -111,12 +111,32 @@ export function SettingsMenu() {
       {open && (
         <div className="fixed inset-0 z-50 flex items-start justify-center">
           <div
-            className="absolute inset-0 bg-black/50"
+            className="absolute inset-0 bg-black/50 cursor-pointer"
             onClick={() => {
               setOpen(false)
               setConfigSection("main")
             }}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                setOpen(false)
+                setConfigSection("main")
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label="Cerrar"
           />
+          <button
+            type="button"
+            className="fixed top-4 right-4 z-[60] rounded-full bg-primary text-primary-foreground p-2 shadow-lg hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring"
+            onClick={() => {
+              setOpen(false)
+              setConfigSection("main")
+            }}
+            aria-label="Cerrar menú"
+          >
+            <X className="h-6 w-6" />
+          </button>
 
           <Card className="relative z-10 w-full max-w-sm mx-4 mt-16 max-h-[85vh] flex flex-col shadow-xl animate-in fade-in slide-in-from-top-4 duration-200">
             <CardHeader className="pb-2 flex-shrink-0">
