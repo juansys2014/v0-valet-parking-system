@@ -62,34 +62,42 @@ router.get("/manifest", async (req, res: Response) => {
   }
 });
 
-/** GET /api/config/logo — público; devuelve el logo redimensionado a 512x512 PNG para icono PWA (Chrome/móvil exige tamaño y formato). Sin logo → redirige al icono por defecto */
+/** GET /api/config/logo — público; siempre devuelve 512x512 PNG (logo o uno por defecto). Chrome exige 200 + PNG para instalar como app. */
 const ICON_SIZE = 512;
 
 router.get("/logo", async (_req, res: Response) => {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+  res.setHeader("Content-Type", "image/png");
   try {
     const row = await settingsRepository.get();
     const dataUrl = row?.logo;
-    if (!dataUrl || typeof dataUrl !== "string" || !dataUrl.startsWith("data:image/")) {
-      res.redirect(302, "/icon.svg");
-      return;
+    if (dataUrl && typeof dataUrl === "string" && dataUrl.startsWith("data:image/")) {
+      const match = dataUrl.match(/^data:(image\/[a-z+]+);base64,([\s\S]+)$/i);
+      if (match) {
+        const base64 = match[2].replace(/\s/g, "");
+        const buf = Buffer.from(base64, "base64");
+        const png = await sharp(buf)
+          .resize(ICON_SIZE, ICON_SIZE, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+          .png()
+          .toBuffer();
+        res.send(png);
+        return;
+      }
     }
-    const match = dataUrl.match(/^data:(image\/[a-z+]+);base64,([\s\S]+)$/i);
-    if (!match) {
-      res.redirect(302, "/icon.svg");
-      return;
-    }
-    const base64 = match[2].replace(/\s/g, "");
-    const buf = Buffer.from(base64, "base64");
-    const png = await sharp(buf)
-      .resize(ICON_SIZE, ICON_SIZE, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    const png = await sharp({
+      create: { width: ICON_SIZE, height: ICON_SIZE, channels: 3, background: { r: 10, g: 10, b: 10 } },
+    })
       .png()
       .toBuffer();
-    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
-    res.setHeader("Content-Type", "image/png");
     res.send(png);
   } catch (e) {
     console.error("GET /api/config/logo", e);
-    res.redirect(302, "/icon.svg");
+    const fallback = await sharp({
+      create: { width: ICON_SIZE, height: ICON_SIZE, channels: 3, background: { r: 10, g: 10, b: 10 } },
+    })
+      .png()
+      .toBuffer();
+    res.send(fallback);
   }
 });
 
