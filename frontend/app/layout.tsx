@@ -2,7 +2,6 @@ import React from "react"
 import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import { Geist, Geist_Mono } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
 import { COOKIE_LANGUAGE, DEFAULT_LANGUAGE } from "@/lib/config"
 import { I18nProvider } from '@/lib/i18n/context'
 import { SettingsProvider } from '@/lib/settings/context'
@@ -53,7 +52,6 @@ export default async function RootLayout({
             </ConfigProvider>
           </SettingsProvider>
         </I18nProvider>
-        <Analytics />
       </body>
     </html>
   )

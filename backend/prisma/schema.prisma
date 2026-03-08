@@ -76,3 +76,25 @@ model Notification {
   @@index([timestamp])
   @@index([ticketCode])
 }
+
+model AppSettings {
+  id          String   @id @default("default")
+  companyName String   @default("Valet Parking")
+  logo        String?  @db.LongText
+  updatedAt   DateTime @updatedAt
+}
+
+model AppUser {
+  id           String   @id @default(uuid())
+  name         String
+  passwordHash String   @default("")
+  isAdmin      Boolean  @default(false)
+  showCheckin  Boolean  @default(true)
+  showCheckout Boolean  @default(true)
+  showVehicles Boolean  @default(true)
+  showAlerts   Boolean  @default(true)
+  showHistory  Boolean  @default(true)
+  accessToken  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

@@ -9,7 +9,8 @@ import {
   useCallback,
   type ReactNode,
 } from "react"
-import { LS_CONFIG, LS_CURRENT_USER } from "@/lib/config"
+import { LS_CURRENT_USER, LS_TOKEN } from "@/lib/config"
+import { configApi, type PublicUser } from "@/lib/api/config"
 
 export interface AppSettings {
   showCheckin: boolean
@@ -19,18 +20,7 @@ export interface AppSettings {
   showHistory: boolean
 }
 
-export interface UserConfig {
-  id: string
-  name: string
-  isAdmin: boolean
-  passwordHash: string
-  accessToken: string | null
-  showCheckin: boolean
-  showCheckout: boolean
-  showVehicles: boolean
-  showAlerts: boolean
-  showHistory: boolean
-}
+export type UserConfig = PublicUser
 
 export interface AppConfig {
   companyName: string
@@ -46,53 +36,7 @@ const defaultSettings: AppSettings = {
   showHistory: true,
 }
 
-const defaultAdmin: UserConfig = {
-  id: "admin",
-  name: "Admin",
-  isAdmin: true,
-  passwordHash: "",
-  accessToken: null,
-  ...defaultSettings,
-}
-
 const DEFAULT_COMPANY_NAME = "Valet Parking"
-
-function loadConfig(): AppConfig {
-  if (typeof window === "undefined") {
-    return { companyName: DEFAULT_COMPANY_NAME, logo: null, users: [{ ...defaultAdmin }] }
-  }
-  const raw = window.localStorage.getItem(LS_CONFIG)
-  if (!raw) return { companyName: DEFAULT_COMPANY_NAME, logo: null, users: [{ ...defaultAdmin }] }
-  try {
-    const parsed = JSON.parse(raw) as Partial<AppConfig>
-    const users = Array.isArray(parsed.users) && parsed.users.length > 0
-      ? parsed.users.map((u) => ({
-          id: u.id ?? "",
-          name: String(u.name ?? ""),
-          isAdmin: Boolean(u.isAdmin),
-          passwordHash: typeof u.passwordHash === "string" ? u.passwordHash : "",
-          accessToken: typeof u.accessToken === "string" ? u.accessToken : null,
-          showCheckin: u.showCheckin !== false,
-          showCheckout: u.showCheckout !== false,
-          showVehicles: u.showVehicles !== false,
-          showAlerts: u.showAlerts !== false,
-          showHistory: u.showHistory !== false,
-        }))
-      : [{ ...defaultAdmin }]
-    return {
-      companyName: typeof parsed.companyName === "string" && parsed.companyName.trim() ? parsed.companyName.trim() : DEFAULT_COMPANY_NAME,
-      logo: typeof parsed.logo === "string" ? parsed.logo : null,
-      users,
-    }
-  } catch {
-    return { companyName: DEFAULT_COMPANY_NAME, logo: null, users: [{ ...defaultAdmin }] }
-  }
-}
-
-function loadCurrentUserId(): string | null {
-  if (typeof window === "undefined") return null
-  return window.localStorage.getItem(LS_CURRENT_USER)
-}
 
 type SettingsKey = keyof AppSettings
 
@@ -102,36 +46,38 @@ interface ConfigContextType {
   currentUser: UserConfig | null
   effectiveSettings: AppSettings
   isAdmin: boolean
+  loading: boolean
   setCompanyName: (name: string) => void
   setLogo: (dataUrl: string | null) => void
   setCurrentUser: (userId: string | null) => void
-  addUser: (user: Omit<UserConfig, "id">) => void
-  updateUser: (id: string, updates: Partial<UserConfig>) => void
+  setAuth: (token: string, user: PublicUser) => void
+  addUser: (user: Omit<UserConfig, "id"> & { password?: string }) => void
+  updateUser: (id: string, updates: Partial<UserConfig> & { password?: string }) => void
   removeUser: (id: string) => void
   updateUserSetting: (userId: string, key: SettingsKey, value: boolean) => void
+  refreshUsers: () => Promise<void>
 }
 
 const ConfigContext = createContext<ConfigContextType | null>(null)
 
 export function ConfigProvider({ children }: { children: ReactNode }) {
-  const [config, setConfigState] = useState<AppConfig>(loadConfig)
-  const [currentUserId, setCurrentUserIdState] = useState<string | null>(loadCurrentUserId)
+  const [companyName, setCompanyNameState] = useState(DEFAULT_COMPANY_NAME)
+  const [logo, setLogoState] = useState<string | null>(null)
+  const [users, setUsersState] = useState<UserConfig[]>([])
+  const [currentUserId, setCurrentUserIdState] = useState<string | null>(() =>
+    typeof window !== "undefined" ? window.localStorage.getItem(LS_CURRENT_USER) : null
+  )
+  const [currentUserData, setCurrentUserData] = useState<PublicUser | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    window.localStorage.setItem(LS_CONFIG, JSON.stringify(config))
-  }, [config])
-
-  useEffect(() => {
-    if (currentUserId !== null) {
-      window.localStorage.setItem(LS_CURRENT_USER, currentUserId)
-    } else {
-      window.localStorage.removeItem(LS_CURRENT_USER)
-    }
-  }, [currentUserId])
+  const config: AppConfig = useMemo(
+    () => ({ companyName, logo, users }),
+    [companyName, logo, users]
+  )
 
   const currentUser = useMemo(
-    () => config.users.find((u) => u.id === currentUserId) ?? null,
-    [config.users, currentUserId]
+    () => currentUserData ?? users.find((u) => u.id === currentUserId) ?? null,
+    [currentUserData, users, currentUserId]
   )
 
   const effectiveSettings = useMemo(
@@ -150,46 +96,167 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
 
   const isAdmin = currentUser?.isAdmin ?? false
 
-  const setCompanyName = useCallback((name: string) => {
-    setConfigState((prev) => ({ ...prev, companyName: name.trim() || DEFAULT_COMPANY_NAME }))
+  const refreshUsers = useCallback(async () => {
+    try {
+      const { users: list } = await configApi.getUsers()
+      setUsersState(list)
+    } catch {
+      setUsersState([])
+    }
   }, [])
 
-  const setLogo = useCallback((dataUrl: string | null) => {
-    setConfigState((prev) => ({ ...prev, logo: dataUrl }))
+  useEffect(() => {
+    let cancelled = false
+    async function load() {
+      try {
+        const settings = await configApi.getSettings()
+        if (!cancelled) {
+          setCompanyNameState(settings.companyName || DEFAULT_COMPANY_NAME)
+          setLogoState(settings.logo ?? null)
+        }
+      } catch {
+        if (!cancelled) {
+          setCompanyNameState(DEFAULT_COMPANY_NAME)
+          setLogoState(null)
+        }
+      }
+
+      const token = typeof window !== "undefined" ? window.localStorage.getItem(LS_TOKEN) : null
+      if (token && !cancelled) {
+        try {
+          const { user } = await configApi.me()
+          if (!cancelled) {
+            setCurrentUserIdState(user.id)
+            setCurrentUserData(user)
+            if (user.isAdmin) {
+              const { users: list } = await configApi.getUsers()
+              if (!cancelled) setUsersState(list)
+            }
+          }
+        } catch {
+          if (!cancelled) {
+            window.localStorage.removeItem(LS_TOKEN)
+            window.localStorage.removeItem(LS_CURRENT_USER)
+            setCurrentUserIdState(null)
+            setCurrentUserData(null)
+            setUsersState([])
+          }
+        }
+      }
+      if (!cancelled) setLoading(false)
+    }
+    load()
+    return () => { cancelled = true }
+  }, [])
+
+  useEffect(() => {
+    if (currentUserId !== null && typeof window !== "undefined") {
+      window.localStorage.setItem(LS_CURRENT_USER, currentUserId)
+    } else if (typeof window !== "undefined") {
+      window.localStorage.removeItem(LS_CURRENT_USER)
+    }
+  }, [currentUserId])
+
+  const setAuth = useCallback((token: string, user: PublicUser) => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(LS_TOKEN, token)
+      window.localStorage.setItem(LS_CURRENT_USER, user.id)
+    }
+    setCurrentUserIdState(user.id)
+    setCurrentUserData(user)
+    if (user.isAdmin) {
+      configApi.getUsers().then(({ users: list }) => setUsersState(list)).catch(() => {})
+    }
   }, [])
 
   const setCurrentUser = useCallback((userId: string | null) => {
-    setCurrentUserIdState(userId)
-  }, [])
-
-  const addUser = useCallback((user: Omit<UserConfig, "id">) => {
-    const id = `user-${Date.now()}`
-    const u: UserConfig = {
-      ...user,
-      id,
-      passwordHash: user.passwordHash ?? "",
-      accessToken: user.accessToken ?? null,
+    if (userId === null && typeof window !== "undefined") {
+      window.localStorage.removeItem(LS_TOKEN)
+      window.localStorage.removeItem(LS_CURRENT_USER)
     }
-    setConfigState((prev) => ({
-      ...prev,
-      users: [...prev.users, u],
-    }))
+    setCurrentUserIdState(userId)
+    if (userId === null) setCurrentUserData(null)
   }, [])
 
-  const updateUser = useCallback((id: string, updates: Partial<UserConfig>) => {
-    setConfigState((prev) => ({
-      ...prev,
-      users: prev.users.map((u) => (u.id === id ? { ...u, ...updates } : u)),
-    }))
+  const setCompanyName = useCallback(async (name: string) => {
+    const value = name.trim() || DEFAULT_COMPANY_NAME
+    try {
+      await configApi.updateSettings({ companyName: value })
+      setCompanyNameState(value)
+    } catch (e) {
+      console.error("setCompanyName", e)
+    }
   }, [])
 
-  const removeUser = useCallback((id: string) => {
-    setConfigState((prev) => ({
-      ...prev,
-      users: prev.users.filter((u) => u.id !== id),
-    }))
-    if (currentUserId === id) {
-      setCurrentUserIdState(null)
+  const setLogo = useCallback(async (dataUrl: string | null) => {
+    try {
+      await configApi.updateSettings({ logo: dataUrl })
+      setLogoState(dataUrl)
+    } catch (e) {
+      console.error("setLogo", e)
+    }
+  }, [])
+
+  const addUser = useCallback(
+    async (user: Omit<UserConfig, "id"> & { password?: string }) => {
+      try {
+        const { user: created } = await configApi.addUser({
+          name: user.name,
+          password: user.password,
+          isAdmin: user.isAdmin,
+          showCheckin: user.showCheckin,
+          showCheckout: user.showCheckout,
+          showVehicles: user.showVehicles,
+          showAlerts: user.showAlerts,
+          showHistory: user.showHistory,
+        })
+        setUsersState((prev) => [...prev, created])
+      } catch (e) {
+        console.error("addUser", e)
+        throw e
+      }
+    },
+    []
+  )
+
+  const updateUser = useCallback(
+    async (id: string, updates: Partial<UserConfig> & { password?: string }) => {
+      try {
+        const { user: updated } = await configApi.updateUser(id, {
+          name: updates.name,
+          password: updates.password,
+          isAdmin: updates.isAdmin,
+          showCheckin: updates.showCheckin,
+          showCheckout: updates.showCheckout,
+          showVehicles: updates.showVehicles,
+          showAlerts: updates.showAlerts,
+          showHistory: updates.showHistory,
+        })
+        setUsersState((prev) => prev.map((u) => (u.id === id ? updated : u)))
+        if (currentUserData?.id === id) setCurrentUserData(updated)
+      } catch (e) {
+        console.error("updateUser", e)
+        throw e
+      }
+    },
+    [currentUserData?.id]
+  )
+
+  const removeUser = useCallback(async (id: string) => {
+    try {
+      await configApi.removeUser(id)
+      setUsersState((prev) => prev.filter((u) => u.id !== id))
+      if (currentUserId === id) {
+        if (typeof window !== "undefined") {
+          window.localStorage.removeItem(LS_TOKEN)
+          window.localStorage.removeItem(LS_CURRENT_USER)
+        }
+        setCurrentUserIdState(null)
+        setCurrentUserData(null)
+      }
+    } catch (e) {
+      console.error("removeUser", e)
+      throw e
     }
   }, [currentUserId])
 
@@ -202,21 +269,8 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
         "showAlerts",
         "showHistory",
       ]
-      if (!keys.includes(key)) {
-        updateUser(userId, { [key]: value })
-        return
-      }
-      setConfigState((prev) => {
-        const user = prev.users.find((u) => u.id === userId)
-        if (!user) return prev
-        const next = { ...user, [key]: value }
-        const count = keys.filter((k) => next[k]).length
-        if (count < 1) return prev
-        return {
-          ...prev,
-          users: prev.users.map((u) => (u.id === userId ? next : u)),
-        }
-      })
+      if (!keys.includes(key)) return
+      updateUser(userId, { [key]: value })
     },
     [updateUser]
   )
@@ -228,13 +282,16 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       currentUser,
       effectiveSettings,
       isAdmin,
+      loading,
       setCompanyName,
       setLogo,
       setCurrentUser,
+      setAuth,
       addUser,
       updateUser,
       removeUser,
       updateUserSetting,
+      refreshUsers,
     }),
     [
       config,
@@ -242,13 +299,16 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       currentUser,
       effectiveSettings,
       isAdmin,
+      loading,
       setCompanyName,
       setLogo,
       setCurrentUser,
+      setAuth,
       addUser,
       updateUser,
       removeUser,
       updateUserSetting,
+      refreshUsers,
     ]
   )
 

@@ -15,7 +15,7 @@ import { SettingsMenu } from "@/components/settings-menu"
 import { useNavCounts } from "@/hooks/use-nav-counts"
 import { useTranslations } from "@/lib/i18n/context"
 import { useConfig } from "@/lib/config/context"
-import { verifyPassword } from "@/lib/utils/auth"
+import { configApi } from "@/lib/api/config"
 
 export default function ValetParkingApp() {
   const [activeTab, setActiveTab] = useState<TabType>("checkin")
@@ -32,22 +32,26 @@ export default function ValetParkingApp() {
     currentUserId,
     config,
     setCurrentUser,
+    setAuth,
+    loading: configLoading,
   } = useConfig()
 
-  // Login por URL (?user=id&token=xxx): acceso directo con QR, no se usa el formulario
+  // Login por URL (?user=id&token=xxx): acceso directo con QR
   useEffect(() => {
-    if (typeof window === "undefined" || !mounted) return
+    if (typeof window === "undefined" || !mounted || configLoading) return
     const params = new URLSearchParams(window.location.search)
     const userId = params.get("user")
     const token = params.get("token")
     if (userId && token) {
-      const user = config.users.find((u) => u.id === userId)
-      if (user && user.accessToken === token) {
-        setCurrentUser(userId)
-        window.history.replaceState({}, "", window.location.pathname)
-      }
+      configApi
+        .validate(userId, token)
+        .then(({ user }) => {
+          setAuth(token, user)
+          window.history.replaceState({}, "", window.location.pathname)
+        })
+        .catch(() => {})
     }
-  }, [mounted, config.users, setCurrentUser])
+  }, [mounted, configLoading, setAuth])
 
   useEffect(() => {
     const tabSettings: Record<TabType, boolean> = {
@@ -78,31 +82,23 @@ export default function ValetParkingApp() {
       setLoginError("")
       setSubmitting(true)
       try {
-        const user = config.users.find(
-          (u) => u.name.trim().toLowerCase() === name.toLowerCase()
-        )
-        if (!user) {
-          setLoginError(t.auth.userNotFound)
-          return
-        }
-        if (user.passwordHash) {
-          const ok = await verifyPassword(password, user.passwordHash)
-          if (!ok) {
-            setLoginError(t.auth.invalidPassword)
-            return
-          }
-        }
-        setCurrentUser(user.id)
+        const res = await configApi.login(name, password)
+        setAuth(res.token, res.user)
         setUsername("")
         setPassword("")
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : ""
+        setLoginError(
+          msg.includes("no encontrado") ? t.auth.userNotFound : t.auth.invalidPassword
+        )
       } finally {
         setSubmitting(false)
       }
     },
-    [username, password, config.users, setCurrentUser, t.auth.userNotFound, t.auth.invalidPassword]
+    [username, password, setAuth, t.auth.userNotFound, t.auth.invalidPassword]
   )
 
-  if (!mounted) {
+  if (!mounted || configLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -113,10 +109,26 @@ export default function ValetParkingApp() {
     )
   }
 
-  // Sin usuario: pantalla de login (usuario + contraseña). El acceso por QR no pasa por aquí.
-  if (!currentUserId && config.users.length > 0) {
+  // Sin usuario: pantalla de login (usuario + contraseña). El acceso por QR se resuelve en el useEffect.
+  if (!currentUserId) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+        <div className="flex items-center gap-3 mb-6">
+          {config.logo ? (
+            <img
+              src={config.logo}
+              alt="Logo"
+              className="h-14 w-14 object-contain rounded-lg bg-muted"
+            />
+          ) : (
+            <div className="h-14 w-14 bg-primary rounded-lg flex items-center justify-center">
+              <Car className="h-8 w-8 text-primary-foreground" />
+            </div>
+          )}
+          <h1 className="font-bold text-foreground text-xl">
+            {config.companyName || t.header.title}
+          </h1>
+        </div>
         <Card className="w-full max-w-sm">
           <CardContent className="pt-6">
             <h2 className="text-lg font-semibold text-center mb-4 flex items-center justify-center gap-2">

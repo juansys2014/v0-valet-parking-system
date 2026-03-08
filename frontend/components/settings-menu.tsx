@@ -27,7 +27,7 @@ import {
 import QRCode from "qrcode"
 import { useTranslations, useLanguage } from "@/lib/i18n/context"
 import { useConfig, type UserConfig } from "@/lib/config/context"
-import { hashPassword, generateToken } from "@/lib/utils/auth"
+import { configApi } from "@/lib/api/config"
 
 const FEATURE_KEYS = [
   { key: "showCheckin" as const, labelKey: "showEntry" as const, icon: LogIn },
@@ -78,27 +78,27 @@ export function SettingsMenu() {
 
   const handleAddUser = useCallback(async () => {
     const name = newUserName.trim() || t.config.userName
-    const passwordHash = newUserPassword.trim()
-      ? await hashPassword(newUserPassword.trim())
-      : ""
-    addUser({
-      name,
-      isAdmin: newUserAdmin,
-      passwordHash,
-      accessToken: null,
-      ...newUserScreens,
-    })
-    setNewUserName("")
-    setNewUserPassword("")
-    setNewUserAdmin(false)
-    setNewUserScreens({
-      showCheckin: true,
-      showCheckout: true,
-      showVehicles: true,
-      showAlerts: true,
-      showHistory: true,
-    })
-    setConfigSection("main")
+    try {
+      await addUser({
+        name,
+        isAdmin: newUserAdmin,
+        password: newUserPassword.trim() || undefined,
+        ...newUserScreens,
+      })
+      setNewUserName("")
+      setNewUserPassword("")
+      setNewUserAdmin(false)
+      setNewUserScreens({
+        showCheckin: true,
+        showCheckout: true,
+        showVehicles: true,
+        showAlerts: true,
+        showHistory: true,
+      })
+      setConfigSection("main")
+    } catch (_e) {
+      // error ya manejado en context
+    }
   }, [newUserName, newUserPassword, newUserAdmin, newUserScreens, addUser, t.config.userName])
 
   return (
@@ -313,14 +313,15 @@ export function SettingsMenu() {
                       featureKeys={FEATURE_KEYS}
                       onToggle={(key, value) => updateUserSetting(user.id, key, value)}
                       onGenerateQR={async () => {
-                        const token = generateToken()
-                        updateUser(user.id, { accessToken: token })
-                        const url =
-                          typeof window !== "undefined"
-                            ? `${window.location.origin}${window.location.pathname}?user=${user.id}&token=${token}`
-                            : ""
-                        const dataUrl = await QRCode.toDataURL(url, { width: 256 })
-                        setQrModal({ dataUrl, userName: user.name })
+                        try {
+                          const { token } = await configApi.regenerateToken(user.id)
+                          const url =
+                            typeof window !== "undefined"
+                              ? `${window.location.origin}${window.location.pathname}?user=${user.id}&token=${token}`
+                              : ""
+                          const dataUrl = await QRCode.toDataURL(url, { width: 256 })
+                          setQrModal({ dataUrl, userName: user.name })
+                        } catch (_e) {}
                       }}
                     />
                   ))}
@@ -433,14 +434,15 @@ export function SettingsMenu() {
                         updateUserSetting(editingUser.id, key, value)
                       }
                       onGenerateQR={async () => {
-                        const token = generateToken()
-                        updateUser(editingUser.id, { accessToken: token })
-                        const url =
-                          typeof window !== "undefined"
-                            ? `${window.location.origin}${window.location.pathname}?user=${editingUser.id}&token=${token}`
-                            : ""
-                        const dataUrl = await QRCode.toDataURL(url, { width: 256 })
-                        setQrModal({ dataUrl, userName: editingUser.name })
+                        try {
+                          const { token } = await configApi.regenerateToken(editingUser.id)
+                          const url =
+                            typeof window !== "undefined"
+                              ? `${window.location.origin}${window.location.pathname}?user=${editingUser.id}&token=${token}`
+                              : ""
+                          const dataUrl = await QRCode.toDataURL(url, { width: 256 })
+                          setQrModal({ dataUrl, userName: editingUser.name })
+                        } catch (_e) {}
                       }}
                     />
                   </div>
@@ -508,7 +510,7 @@ function UserCard({
 }: {
   user: UserConfig
   t: ReturnType<typeof useTranslations>
-  onUpdate: (updates: Partial<UserConfig>) => void
+  onUpdate: (updates: Partial<UserConfig> & { password?: string }) => void | Promise<void>
   onRemove: () => void
   canRemove: boolean
   featureKeys: typeof FEATURE_KEYS
@@ -527,8 +529,7 @@ function UserCard({
     if (!passwordInput.trim()) return
     setSettingPassword(true)
     try {
-      const hash = await hashPassword(passwordInput.trim())
-      onUpdate({ passwordHash: hash })
+      await onUpdate({ password: passwordInput.trim() })
       setPasswordInput("")
     } finally {
       setSettingPassword(false)
