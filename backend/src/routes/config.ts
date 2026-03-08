@@ -14,7 +14,7 @@ function toPublicUser(user: { id: string; name: string; isAdmin: boolean; showCh
   return {
     id: user.id,
     name: user.name,
-    isAdmin: user.isAdmin,
+    isAdmin: Boolean(user.isAdmin),
     showCheckin: user.showCheckin,
     showCheckout: user.showCheckout,
     showVehicles: user.showVehicles,
