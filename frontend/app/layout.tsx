@@ -15,6 +15,12 @@ export const metadata: Metadata = {
   title: 'Valet Parking Control',
   description: 'Valet parking control system - Vehicle registration, photos, and delivery management',
   generator: 'v0.app',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Valet Parking',
+  },
   icons: {
     icon: [
       {
@@ -31,6 +37,11 @@ export const metadata: Metadata = {
       },
     ],
     apple: '/apple-icon.png',
+  },
+  other: {
+    'mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-capable': 'yes',
+    'apple-mobile-web-app-status-bar-style': 'default',
   },
 }
 
