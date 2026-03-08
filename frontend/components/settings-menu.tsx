@@ -274,20 +274,22 @@ export function SettingsMenu() {
                       </div>
 
                       <Separator />
-
-                      <Button
-                        variant="outline"
-                        className="w-full h-11 gap-2"
-                        onClick={() => {
-                          setCurrentUser(null)
-                          setOpen(false)
-                        }}
-                      >
-                        <SwitchUserIcon className="h-4 w-4" />
-                        {t.auth.logout}
-                      </Button>
                     </>
                   )}
+
+                  {/* Cerrar sesión: todos los usuarios */}
+                  <Separator />
+                  <Button
+                    variant="outline"
+                    className="w-full h-11 gap-2"
+                    onClick={() => {
+                      setCurrentUser(null)
+                      setOpen(false)
+                    }}
+                  >
+                    <SwitchUserIcon className="h-4 w-4" />
+                    {t.auth.logout}
+                  </Button>
                 </>
               )}
 
