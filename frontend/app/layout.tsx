@@ -16,7 +16,7 @@ const defaultMetadata: Metadata = {
   title: 'Valet Parking Control',
   description: 'Valet parking control system - Vehicle registration, photos, and delivery management',
   generator: 'v0.app',
-  manifest: '/api/config/manifest',
+  manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
