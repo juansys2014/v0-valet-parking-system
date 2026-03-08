@@ -33,11 +33,13 @@ const withPWA = withPWAInit({
   disable: process.env.NODE_ENV === 'development',
   register: true,
   skipWaiting: true,
+  clientsClaim: true,
   scope: '/',
   sw: 'sw.js',
   workboxOptions: {
     navigateFallback: '/',
-    navigateFallbackDenylist: [/^\/api/, /^\/_next/],
+    navigateFallbackDenylist: [/^\/api/, /^\/_next/, /\.[^/]+$/],
+    cleanupOutdatedCaches: true,
   },
 })
 

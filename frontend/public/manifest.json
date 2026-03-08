@@ -2,7 +2,7 @@
   "name": "Valet Parking Control",
   "short_name": "Valet Parking",
   "description": "Sistema de control de valet parking - registro de vehículos y entrega",
-  "start_url": "/",
+  "start_url": "/?utm_source=pwa",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
