@@ -107,9 +107,15 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false
+    const TIMEOUT_MS = 10000
+
     async function load() {
       try {
-        const settings = await configApi.getSettings()
+        const settingsPromise = configApi.getSettings()
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("timeout")), TIMEOUT_MS)
+        )
+        const settings = await Promise.race([settingsPromise, timeoutPromise])
         if (!cancelled) {
           setCompanyNameState(settings.companyName || DEFAULT_COMPANY_NAME)
           setLogoState(settings.logo ?? null)
