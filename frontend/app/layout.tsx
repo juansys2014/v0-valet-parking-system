@@ -6,6 +6,7 @@ import { COOKIE_LANGUAGE, DEFAULT_LANGUAGE } from "@/lib/config"
 import { I18nProvider } from '@/lib/i18n/context'
 import { SettingsProvider } from '@/lib/settings/context'
 import { ConfigProvider } from '@/lib/config/context'
+import { DynamicIcon } from '@/components/dynamic-icon'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -22,10 +23,7 @@ export const metadata: Metadata = {
     title: 'Valet Parking',
   },
   icons: {
-    icon: [
-      { url: '/api/config/logo', type: 'image/png', sizes: '512x512' },
-      { url: '/icon.svg', type: 'image/svg+xml', sizes: 'any' },
-    ],
+    icon: [{ url: '/api/config/logo', type: 'image/png', sizes: '512x512' }],
     apple: '/api/config/logo',
   },
   other: {
@@ -49,6 +47,7 @@ export default async function RootLayout({
         <I18nProvider initialLanguage={initialLanguage}>
           <SettingsProvider>
             <ConfigProvider>
+              <DynamicIcon />
               {children}
             </ConfigProvider>
           </SettingsProvider>

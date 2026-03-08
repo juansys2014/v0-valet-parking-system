@@ -33,13 +33,13 @@ router.get("/logo", async (_req, res: Response) => {
       res.redirect(302, "/icon.svg");
       return;
     }
-    const match = dataUrl.match(/^data:(image\/[a-z+]+);base64,(.+)$/i);
+    const match = dataUrl.match(/^data:(image\/[a-z+]+);base64,([\s\S]+)$/i);
     if (!match) {
-      res.status(404).end();
+      res.redirect(302, "/icon.svg");
       return;
     }
     const mime = match[1];
-    const base64 = match[2];
+    const base64 = match[2].replace(/\s/g, "");
     const buf = Buffer.from(base64, "base64");
     res.setHeader("Cache-Control", "public, max-age=86400");
     res.setHeader("Content-Type", mime);
