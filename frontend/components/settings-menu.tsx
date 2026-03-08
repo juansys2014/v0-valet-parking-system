@@ -186,20 +186,6 @@ export function SettingsMenu() {
                     </div>
                   </div>
 
-                  {/* Cerrar sesión: todos los usuarios (visible siempre) */}
-                  <Separator />
-                  <Button
-                    variant="outline"
-                    className="w-full h-11 gap-2"
-                    onClick={() => {
-                      setCurrentUser(null)
-                      setOpen(false)
-                    }}
-                  >
-                    <SwitchUserIcon className="h-4 w-4" />
-                    {t.auth.logout}
-                  </Button>
-
                   {/* Logo, usuarios: solo admin */}
                   {isAdmin && (
                     <>
@@ -314,21 +300,23 @@ export function SettingsMenu() {
                       </div>
 
                       <Separator />
-
-                      <Button
-                        variant="outline"
-                        className="w-full h-11 gap-2"
-                        onClick={() => {
-                          setCurrentUser(null)
-                          setOpen(false)
-                          setConfigSection("main")
-                        }}
-                      >
-                        <SwitchUserIcon className="h-4 w-4" />
-                        {t.auth.logout}
-                      </Button>
                     </>
                   )}
+
+                  {/* Cerrar sesión: al final para todos */}
+                  <Separator />
+                  <Button
+                    variant="outline"
+                    className="w-full h-11 gap-2"
+                    onClick={() => {
+                      setCurrentUser(null)
+                      setOpen(false)
+                      setConfigSection("main")
+                    }}
+                  >
+                    <SwitchUserIcon className="h-4 w-4" />
+                    {t.auth.logout}
+                  </Button>
                 </>
               )}
 
