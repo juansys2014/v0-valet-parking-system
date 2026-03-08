@@ -1,3 +1,4 @@
+require("dotenv").config();
 const crypto = require("crypto");
 const { PrismaClient } = require("@prisma/client");
 
@@ -6,7 +7,9 @@ function hashPassword(plain) {
 }
 
 async function main() {
-  const prisma = new PrismaClient();
+  const url = process.env.DATABASE_URL;
+  if (!url) throw new Error("DATABASE_URL is not set");
+  const prisma = new PrismaClient({ datasources: { db: { url } } });
   const count = await prisma.appUser.count();
   if (count > 0) return;
   await prisma.appUser.create({
