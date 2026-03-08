@@ -24,13 +24,13 @@ function toPublicUser(user: { id: string; name: string; isAdmin: boolean; showCh
   };
 }
 
-/** GET /api/config/logo — público; devuelve la imagen del logo de la empresa (para PWA / icono instalable) */
+/** GET /api/config/logo — público; devuelve la imagen del logo de la empresa (para PWA / icono instalable). Sin logo → redirige al icono por defecto */
 router.get("/logo", async (_req, res: Response) => {
   try {
     const row = await settingsRepository.get();
     const dataUrl = row?.logo;
     if (!dataUrl || typeof dataUrl !== "string" || !dataUrl.startsWith("data:image/")) {
-      res.status(404).end();
+      res.redirect(302, "/icon.svg");
       return;
     }
     const match = dataUrl.match(/^data:(image\/[a-z+]+);base64,(.+)$/i);
