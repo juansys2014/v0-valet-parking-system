@@ -24,15 +24,21 @@ function toPublicUser(user: { id: string; name: string; isAdmin: boolean; showCh
   };
 }
 
-/** GET /api/config/manifest — público; manifest PWA dinámico con URL del logo con ?v= para que el móvil no use icono cacheado */
+/** GET /api/config/manifest — público; manifest PWA con el logo en data URL para que el móvil no use icono cacheado ni pida /api/config/logo */
 router.get("/manifest", async (_req, res: Response) => {
   res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
   res.setHeader("Content-Type", "application/manifest+json");
   try {
     const row = await settingsRepository.get();
     const name = row?.companyName ?? "Valet Parking";
-    const v = row?.updatedAt ? new Date(row.updatedAt).getTime() : Date.now();
-    const logoUrl = `/api/config/logo?v=${v}`;
+    const logoDataUrl = row?.logo && typeof row.logo === "string" && row.logo.startsWith("data:image/") ? row.logo : null;
+    const icons: { src: string; sizes: string; type: string; purpose: string }[] = [];
+    if (logoDataUrl) {
+      const mime = logoDataUrl.match(/^data:(image\/[a-z+]+);/i)?.[1] ?? "image/png";
+      icons.push({ src: logoDataUrl, sizes: "512x512", type: mime, purpose: "any" });
+      icons.push({ src: logoDataUrl, sizes: "192x192", type: mime, purpose: "any" });
+    }
+    icons.push({ src: "/icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" });
     const manifest = {
       name: name,
       short_name: name.length > 20 ? name.slice(0, 17) + "…" : name,
@@ -42,16 +48,12 @@ router.get("/manifest", async (_req, res: Response) => {
       background_color: "#0a0a0a",
       theme_color: "#0a0a0a",
       orientation: "portrait-primary" as const,
-      icons: [
-        { src: logoUrl, sizes: "512x512", type: "image/png", purpose: "any" },
-        { src: logoUrl, sizes: "192x192", type: "image/png", purpose: "any" },
-        { src: "/icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" },
-      ],
+      icons,
     };
     res.send(manifest);
   } catch (e) {
     console.error("GET /api/config/manifest", e);
-    res.status(500).send({ name: "Valet Parking", short_name: "Valet Parking", start_url: "/", display: "standalone", icons: [] });
+    res.status(500).send({ name: "Valet Parking", short_name: "Valet Parking", start_url: "/", display: "standalone", icons: [{ src: "/icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" }] });
   }
 });
 
