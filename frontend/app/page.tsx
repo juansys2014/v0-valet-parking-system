@@ -114,7 +114,7 @@ export default function ValetParkingApp() {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
         <div className="flex items-center gap-3 mb-6">
-          {config.logo ? (
+          {config?.logo ? (
             <img
               src={config.logo}
               alt="Logo"
@@ -126,7 +126,7 @@ export default function ValetParkingApp() {
             </div>
           )}
           <h1 className="font-bold text-foreground text-xl">
-            {config.companyName || t.header.title}
+            {config?.companyName || t.header.title}
           </h1>
         </div>
         <Card className="w-full max-w-sm">
@@ -190,7 +190,7 @@ export default function ValetParkingApp() {
         <div className="max-w-lg mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {config.logo ? (
+              {config?.logo ? (
                 <img
                   src={config.logo}
                   alt="Logo"
@@ -203,7 +203,7 @@ export default function ValetParkingApp() {
               )}
               <div>
                 <h1 className="font-bold text-foreground text-lg leading-tight">
-                  {config.companyName || t.header.title}
+                  {config?.companyName || t.header.title}
                 </h1>
                 <p className="text-xs text-muted-foreground">
                   {parkedCount} {t.header.subtitle.toLowerCase()}

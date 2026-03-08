@@ -116,7 +116,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
           setTimeout(() => reject(new Error("timeout")), TIMEOUT_MS)
         )
         const settings = await Promise.race([settingsPromise, timeoutPromise])
-        if (!cancelled) {
+        if (!cancelled && settings) {
           setCompanyNameState(settings.companyName || DEFAULT_COMPANY_NAME)
           setLogoState(settings.logo ?? null)
         }
@@ -127,29 +127,32 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      const token = typeof window !== "undefined" ? window.localStorage.getItem(LS_TOKEN) : null
-      if (token && !cancelled) {
-        try {
-          const { user } = await configApi.me()
-          if (!cancelled) {
-            setCurrentUserIdState(user.id)
-            setCurrentUserData(user)
-            if (user.isAdmin) {
-              const { users: list } = await configApi.getUsers()
-              if (!cancelled) setUsersState(list)
+      try {
+        const token = typeof window !== "undefined" ? window.localStorage.getItem(LS_TOKEN) : null
+        if (token && !cancelled) {
+          try {
+            const { user } = await configApi.me()
+            if (!cancelled && user) {
+              setCurrentUserIdState(user.id)
+              setCurrentUserData(user)
+              if (user.isAdmin) {
+                const { users: list } = await configApi.getUsers()
+                if (!cancelled && list) setUsersState(list)
+              }
+            }
+          } catch {
+            if (!cancelled && typeof window !== "undefined") {
+              window.localStorage.removeItem(LS_TOKEN)
+              window.localStorage.removeItem(LS_CURRENT_USER)
+              setCurrentUserIdState(null)
+              setCurrentUserData(null)
+              setUsersState([])
             }
           }
-        } catch {
-          if (!cancelled) {
-            window.localStorage.removeItem(LS_TOKEN)
-            window.localStorage.removeItem(LS_CURRENT_USER)
-            setCurrentUserIdState(null)
-            setCurrentUserData(null)
-            setUsersState([])
-          }
         }
+      } finally {
+        if (!cancelled) setLoading(false)
       }
-      if (!cancelled) setLoading(false)
     }
     load()
     return () => { cancelled = true }

@@ -213,7 +213,7 @@ export function SettingsMenu() {
                               {t.config.companyName}
                             </Label>
                             <Input
-                              value={config.companyName}
+                              value={config?.companyName ?? ""}
                               onChange={(e) => setCompanyName(e.target.value)}
                               placeholder={t.config.companyNamePlaceholder}
                               className="h-9"
@@ -239,7 +239,7 @@ export function SettingsMenu() {
                               <Upload className="h-4 w-4" />
                               {t.config.uploadLogo}
                             </Button>
-                            {config.logo && (
+                            {config?.logo && (
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -249,7 +249,7 @@ export function SettingsMenu() {
                               </Button>
                             )}
                           </div>
-                          {config.logo && (
+                          {config?.logo && (
                             <div className="rounded-lg overflow-hidden bg-muted border border-border">
                               <img
                                 src={config.logo}
@@ -274,7 +274,7 @@ export function SettingsMenu() {
                             </Button>
                           </div>
                           <ul className="space-y-1 text-sm text-muted-foreground">
-                            {config.users.map((u) => (
+                            {(config?.users ?? []).map((u) => (
                               <li
                                 key={u.id}
                                 className="flex items-center gap-2 group"
@@ -320,14 +320,14 @@ export function SettingsMenu() {
                     ← {t.common.back}
                   </Button>
 
-                  {config.users.map((user) => (
+                  {(config?.users ?? []).map((user) => (
                     <UserCard
                       key={user.id}
                       user={user}
                       t={t}
                       onUpdate={(updates) => updateUser(user.id, updates)}
-                      onRemove={() => config.users.length > 1 && removeUser(user.id)}
-                      canRemove={config.users.length > 1}
+                      onRemove={() => (config?.users?.length ?? 0) > 1 && removeUser(user.id)}
+                      canRemove={(config?.users?.length ?? 0) > 1}
                       featureKeys={FEATURE_KEYS}
                       onToggle={(key, value) => updateUserSetting(user.id, key, value)}
                       onGenerateQR={async () => {
@@ -413,7 +413,7 @@ export function SettingsMenu() {
 
           {/* Modal editar un solo usuario */}
           {editingUserId && (() => {
-            const editingUser = config.users.find((u) => u.id === editingUserId)
+            const editingUser = (config?.users ?? []).find((u) => u.id === editingUserId)
             if (!editingUser) return null
             return (
               <div
@@ -441,12 +441,12 @@ export function SettingsMenu() {
                       t={t}
                       onUpdate={(updates) => updateUser(editingUser.id, updates)}
                       onRemove={() => {
-                        if (config.users.length > 1) {
+                        if ((config?.users?.length ?? 0) > 1) {
                           removeUser(editingUser.id)
                           setEditingUserId(null)
                         }
                       }}
-                      canRemove={config.users.length > 1}
+                      canRemove={(config?.users?.length ?? 0) > 1}
                       featureKeys={FEATURE_KEYS}
                       onToggle={(key, value) =>
                         updateUserSetting(editingUser.id, key, value)

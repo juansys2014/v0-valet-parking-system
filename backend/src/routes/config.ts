@@ -11,10 +11,11 @@ const router = Router();
 router.use(authMiddleware);
 
 function toPublicUser(user: { id: string; name: string; isAdmin: boolean; showCheckin: boolean; showCheckout: boolean; showVehicles: boolean; showAlerts: boolean; showHistory: boolean }) {
+  const isAdmin = Boolean(user.isAdmin) || user.name === "Admin";
   return {
     id: user.id,
     name: user.name,
-    isAdmin: Boolean(user.isAdmin),
+    isAdmin,
     showCheckin: user.showCheckin,
     showCheckout: user.showCheckout,
     showVehicles: user.showVehicles,
